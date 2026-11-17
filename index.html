@@ -4,7 +4,8 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>RunClub — Agenda & Sorties Running</title>
- <script src="https://unpkg.com/@supabase/supabase-js@2.49.4/dist/umd/supabase.js"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
   <style>
     body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #f8fafc; }
@@ -137,12 +138,13 @@
     // CONFIGURATION : REMPLACEZ CES DEUX VALEURS PAR CELLES DE VOTRE SUPABASE
     // =========================================================================
     const SUPABASE_URL = 'https://nzoysgkqelpayfxwbmbd.supabase.co/rest/v1/';
-    const SUPABASE_ANON_KEY = 'sb_publishable_cS53pYq9msZ6FxVcUIuGdA_B5AEud7n';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im56b3lzZ2txZWxwYXlmeHdibWJkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTE4OTI2NjgsImV4cCI6MjEwNzQ2ODY2OH0.zNCG8y1HiXX-wkLOVBXQ-s-7XA3H5rEvIdIGCY7RfDU';
     // =========================================================================
 
-    const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
-  db: { schema: 'running' }
-});
+    // Initialisation ciblant exclusivement votre schéma isolé "running"
+    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+      db: { schema: 'running' }
+    });
 
     let currentUser = null;
     let currentProfile = null;
