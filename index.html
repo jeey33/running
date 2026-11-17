@@ -150,7 +150,7 @@
     let currentProfile = null;
     let allProfiles = {};
 
-    // 1. GESTION DE L'AUTHENTIFICATION GOOGLE
+  // 1. GESTION DE L'AUTHENTIFICATION GOOGLE
     async function signInWithGoogle() {
       await supabaseClient.auth.signInWithOAuth({
         provider: 'google',
@@ -163,34 +163,45 @@
       window.location.reload();
     }
 
-    async function initAuth() {
-      const { data: { session } } = await supabaseClient.auth.getSession();
+    async function handleUserSession(session) {
       currentUser = session?.user || null;
 
       if (currentUser) {
-        // S'assurer que le profil existe dans running.profiles (utile si l'utilisateur existait déjà sur l'autre projet)
         const { data: existingProfile } = await supabaseClient
           .from('profiles')
           .select('*')
           .eq('id', currentUser.id)
-          .single();
+          .maybeSingle();
 
         if (!existingProfile) {
-          const { data: newProf } = await supabaseClient.from('profiles').insert({
+          const { data: newProf, error } = await supabaseClient.from('profiles').insert({
             id: currentUser.id,
             full_name: currentUser.user_metadata?.full_name || currentUser.email.split('@')[0],
             avatar_url: currentUser.user_metadata?.avatar_url || ''
           }).select().single();
+          if (error) console.error('Erreur création profil:', error);
           currentProfile = newProf;
         } else {
           currentProfile = existingProfile;
         }
+      } else {
+        currentProfile = null;
       }
 
       renderAuthUI();
       await loadProfiles();
       await loadRuns();
       await loadMessages();
+    }
+
+    async function initAuth() {
+      // Écoute automatique du retour de Google
+      supabaseClient.auth.onAuthStateChange(async (event, session) => {
+        await handleUserSession(session);
+      });
+
+      const { data: { session } } = await supabaseClient.auth.getSession();
+      await handleUserSession(session);
       setupRealtime();
     }
 
