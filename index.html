@@ -140,10 +140,9 @@
     const SUPABASE_ANON_KEY = 'sb_publishable_cS53pYq9msZ6FxVcUIuGdA_B5AEud7n';
     // =========================================================================
 
-    // Initialisation ciblant exclusivement votre schéma isolé "running"
-    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
-      db: { schema: 'running' }
-    });
+    const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+  db: { schema: 'running' }
+});
 
     let currentUser = null;
     let currentProfile = null;
