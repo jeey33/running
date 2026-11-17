@@ -3,10 +3,10 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>RunClub — Agenda & Sorties Running</title>
+  <title>RunClub — Agenda, Sorties & Communauté Running</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@latest"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
     body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #f8fafc; }
     .chat-scroll::-webkit-scrollbar { width: 6px; }
@@ -16,10 +16,12 @@
 <body class="text-slate-800 min-h-screen flex flex-col">
 
   <!-- NAVBAR -->
-  <header class="bg-white border-b border-slate-200 sticky top-0 z-30">
-    <div class="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
-      <div class="flex items-center gap-2">
-        <span class="text-2xl">🏃‍♂️</span>
+  <header class="bg-white/90 backdrop-blur-md border-b border-slate-200 sticky top-0 z-30">
+    <div class="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
+      <div class="flex items-center gap-2.5">
+        <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-orange-600 to-amber-500 flex items-center justify-center text-white text-lg shadow-sm">
+          🏃‍♂️
+        </div>
         <span class="font-extrabold text-xl tracking-tight text-slate-900">Run<span class="text-orange-600">Club</span></span>
       </div>
 
@@ -29,56 +31,120 @@
     </div>
   </header>
 
-  <!-- CONTENU PRINCIPAL -->
-  <main class="max-w-6xl mx-auto px-4 py-8 flex-1 w-full grid grid-cols-1 lg:grid-cols-3 gap-8">
+  <!-- HERO BANNER AVEC PHOTO -->
+  <section class="relative bg-slate-900 text-white overflow-hidden">
+    <img src="https://images.unsplash.com/photo-1552674605-db6ffd4facb5?auto=format&fit=crop&w=1600&q=80" 
+         alt="Coureurs en groupe au lever du soleil" 
+         class="absolute inset-0 w-full h-full object-cover opacity-35" />
+    <div class="absolute inset-0 bg-gradient-to-r from-slate-950/90 via-slate-900/70 to-transparent"></div>
     
-    <!-- COLONNE GAUCHE (2/3) : AGENDA & SORTIES -->
-    <div class="lg:col-span-2 space-y-6">
-      <div class="flex flex-wrap items-center justify-between gap-4">
-        <div>
-          <h1 class="text-2xl font-extrabold text-slate-900">Prochaines sorties</h1>
-          <p class="text-sm text-slate-500">Inscris-toi en un clic ou propose un parcours au groupe.</p>
-        </div>
-        <button id="btn-open-modal" onclick="toggleModal(true)" class="hidden bg-orange-600 hover:bg-orange-700 text-white font-semibold px-4 py-2.5 rounded-xl shadow-sm transition flex items-center gap-2 cursor-pointer">
-          <span>+</span> Proposer une sortie
-        </button>
+    <div class="relative max-w-7xl mx-auto px-4 py-12 sm:py-16 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+      <div class="max-w-2xl space-y-3">
+        <span class="inline-block bg-orange-500/20 border border-orange-400/30 text-orange-300 text-xs font-bold uppercase tracking-wider px-3 py-1 rounded-full">
+          Communauté & Partage
+        </span>
+        <h1 class="text-3xl sm:text-4xl font-extrabold tracking-tight leading-tight">
+          Ne cours plus jamais seul.<br/>
+          <span class="text-transparent bg-clip-text bg-gradient-to-r from-orange-400 to-amber-300">Choisis ta prochaine sortie.</span>
+        </h1>
+        <p class="text-slate-300 text-sm sm:text-base">
+          Clique sur une date dans le calendrier pour proposer un parcours, inscris-toi aux courses officielles avec le groupe et retrouve les coureurs au vestiaire.
+        </p>
       </div>
 
-      <!-- Liste des courses -->
-      <div id="runs-list" class="space-y-4">
-        <div class="text-center py-12 text-slate-400">Chargement de l'agenda...</div>
+      <button id="btn-open-modal" onclick="openModalWithDate()" class="hidden bg-gradient-to-r from-orange-600 to-amber-500 hover:from-orange-500 hover:to-amber-400 text-white font-bold px-6 py-3.5 rounded-2xl shadow-lg shadow-orange-600/30 transition transform hover:-translate-y-0.5 flex items-center gap-2 cursor-pointer shrink-0">
+        <span class="text-lg">+</span> Proposer une sortie
+      </button>
+    </div>
+  </section>
+
+  <!-- CONTENU PRINCIPAL -->
+  <main class="max-w-7xl mx-auto px-4 py-8 flex-1 w-full grid grid-cols-1 lg:grid-cols-12 gap-8">
+    
+    <!-- COLONNE GAUCHE (8/12) : CALENDRIER INTERACTIF + LISTE DES SORTIES -->
+    <div class="lg:col-span-8 space-y-8">
+      
+      <!-- BLOC CALENDRIER MENSUEL -->
+      <div class="bg-white rounded-3xl border border-slate-200 shadow-xs p-5 sm:p-6">
+        <div class="flex flex-wrap items-center justify-between gap-4 mb-5">
+          <div>
+            <h2 id="calendar-month-title" class="text-xl font-extrabold text-slate-900 capitalize">Mois Année</h2>
+            <p class="text-xs text-slate-500 mt-0.5">
+              Clique sur un jour pour <strong class="text-orange-600">créer une sortie</strong> ou voir les courses prévues.
+            </p>
+          </div>
+          <div class="flex items-center gap-2">
+            <button onclick="resetDateFilter()" id="btn-reset-filter" class="hidden text-xs font-semibold bg-orange-50 text-orange-700 px-3 py-1.5 rounded-xl hover:bg-orange-100 cursor-pointer">
+              Tout afficher
+            </button>
+            <button onclick="changeMonth(-1)" class="w-9 h-9 rounded-xl border border-slate-200 hover:bg-slate-50 flex items-center justify-center font-bold text-slate-600 cursor-pointer">&larr;</button>
+            <button onclick="changeMonth(1)" class="w-9 h-9 rounded-xl border border-slate-200 hover:bg-slate-50 flex items-center justify-center font-bold text-slate-600 cursor-pointer">&rarr;</button>
+          </div>
+        </div>
+
+        <!-- Jours de la semaine -->
+        <div class="grid grid-cols-7 text-center text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">
+          <div>Lun</div><div>Mar</div><div>Mer</div><div>Jeu</div><div>Ven</div><div>Sam</div><div>Dim</div>
+        </div>
+
+        <!-- Grille des jours -->
+        <div id="calendar-grid" class="grid grid-cols-7 gap-1.5 sm:gap-2">
+          <!-- Généré en JS -->
+        </div>
+      </div>
+
+      <!-- LISTE DES SORTIES -->
+      <div class="space-y-4">
+        <div class="flex items-center justify-between">
+          <h2 id="runs-section-title" class="text-xl font-extrabold text-slate-900">Toutes les prochaines sorties</h2>
+          <span id="runs-counter" class="text-xs font-bold bg-slate-200/70 text-slate-700 px-3 py-1 rounded-full">0 sortie</span>
+        </div>
+
+        <div id="runs-list" class="grid grid-cols-1 md:grid-cols-2 gap-5">
+          <div class="col-span-full text-center py-12 text-slate-400">Chargement de l'agenda...</div>
+        </div>
+      </div>
+
+      <!-- GALERIE AMBIANCE DU CLUB -->
+      <div class="pt-4 space-y-3">
+        <h3 class="text-sm font-extrabold uppercase tracking-wider text-slate-400">L'esprit du groupe</h3>
+        <div class="grid grid-cols-3 gap-3 sm:gap-4 h-36 sm:h-44">
+          <img src="https://images.unsplash.com/photo-1476480862126-209bfaa8edc8?auto=format&fit=crop&w=600&q=80" alt="Sortie trail" class="w-full h-full object-cover rounded-2xl shadow-xs" />
+          <img src="https://images.unsplash.com/photo-1513593771513-7b58b6c4af38?auto=format&fit=crop&w=600&q=80" alt="Course sur route" class="w-full h-full object-cover rounded-2xl shadow-xs" />
+          <img src="https://images.unsplash.com/photo-1530143311094-34d807799e8f?auto=format&fit=crop&w=600&q=80" alt="Départ marathon" class="w-full h-full object-cover rounded-2xl shadow-xs" />
+        </div>
       </div>
     </div>
 
-    <!-- COLONNE DROITE (1/3) : CHAT DU GROUPE & MEMBRES -->
-    <div class="space-y-6">
+    <!-- COLONNE DROITE (4/12) : CHAT DU GROUPE & MEMBRES -->
+    <div class="lg:col-span-4 space-y-6">
       <!-- Chat en direct -->
-      <div class="bg-white rounded-2xl border border-slate-200 shadow-sm flex flex-col h-[500px]">
+      <div class="bg-white rounded-3xl border border-slate-200 shadow-xs flex flex-col h-[540px] sticky top-24">
         <div class="p-4 border-b border-slate-100 flex items-center justify-between">
-          <div class="flex items-center gap-2">
+          <div class="flex items-center gap-2.5">
             <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
-            <h2 class="font-bold text-slate-900">Le Vestiaire (Chat)</h2>
+            <h2 class="font-extrabold text-slate-900">Le Vestiaire (Chat)</h2>
           </div>
-          <span class="text-xs text-slate-400">En direct</span>
+          <span class="text-xs font-semibold text-slate-400">En direct</span>
         </div>
 
-        <div id="chat-messages" class="flex-1 p-4 overflow-y-auto space-y-3 chat-scroll bg-slate-50/50">
+        <div id="chat-messages" class="flex-1 p-4 overflow-y-auto space-y-3 chat-scroll bg-slate-50/60">
           <!-- Messages injectés ici -->
         </div>
 
-        <form id="chat-form" class="p-3 border-t border-slate-100 flex gap-2">
+        <form id="chat-form" class="p-3 border-t border-slate-100 flex gap-2 bg-white rounded-b-3xl">
           <input type="text" id="chat-input" placeholder="Connecte-toi pour discuter..." disabled
             class="flex-1 text-sm bg-slate-100 rounded-xl px-3.5 py-2.5 focus:outline-none focus:ring-2 focus:ring-orange-500 disabled:opacity-60" />
           <button type="submit" id="chat-submit" disabled
-            class="bg-slate-900 hover:bg-slate-800 text-white text-sm font-semibold px-4 py-2.5 rounded-xl transition disabled:opacity-40 cursor-pointer">
+            class="bg-slate-900 hover:bg-slate-800 text-white text-sm font-bold px-4 py-2.5 rounded-xl transition disabled:opacity-40 cursor-pointer">
             Envoyer
           </button>
         </form>
       </div>
 
       <!-- Liste des coureurs inscrits sur le site -->
-      <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-4">
-        <h3 class="font-bold text-slate-900 text-sm mb-3">Membres du club (<span id="members-count">0</span>)</h3>
+      <div class="bg-white rounded-3xl border border-slate-200 shadow-xs p-5">
+        <h3 class="font-extrabold text-slate-900 text-sm mb-3">Coureurs inscrits (<span id="members-count">0</span>)</h3>
         <div id="members-list" class="flex flex-wrap gap-2">
           <!-- Avatars des membres -->
         </div>
@@ -87,70 +153,98 @@
 
   </main>
 
-  <!-- MODALE : PROPOSER UNE COURSE -->
-  <div id="run-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-xs hidden items-center justify-center p-4 z-50">
-    <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-xl space-y-4">
-      <div class="flex items-center justify-between">
-        <h2 class="text-lg font-extrabold text-slate-900">Nouvelle sortie running</h2>
-        <button onclick="toggleModal(false)" class="text-slate-400 hover:text-slate-600 text-xl font-bold cursor-pointer">&times;</button>
-      </div>
-      <form id="new-run-form" class="space-y-3">
+  <!-- MODALE : CRÉER / PROPOSER UNE SORTIE -->
+  <div id="run-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs hidden items-center justify-center p-4 z-50">
+    <div class="bg-white rounded-3xl max-w-lg w-full p-6 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto">
+      <div class="flex items-center justify-between border-b border-slate-100 pb-3">
         <div>
-          <label class="block text-xs font-semibold text-slate-600 mb-1">Titre de la sortie *</label>
-          <input type="text" id="run-title" required placeholder="Ex: Sortie longue Canal du Midi"
-            class="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-orange-500" />
+          <h2 class="text-lg font-extrabold text-slate-900">Planifier une sortie / course</h2>
+          <p class="text-xs text-slate-500">Partage les infos pour motiver le groupe à te rejoindre.</p>
         </div>
+        <button onclick="toggleModal(false)" class="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold cursor-pointer">&times;</button>
+      </div>
+
+      <form id="new-run-form" class="space-y-3.5">
+        <div>
+          <label class="block text-xs font-bold text-slate-700 mb-1">Nom de la sortie ou de la course *</label>
+          <input type="text" id="run-title" required placeholder="Ex: Semi-Marathon de Toulouse / Sortie Canal"
+            class="w-full border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:border-orange-500" />
+        </div>
+
         <div class="grid grid-cols-2 gap-3">
           <div>
-            <label class="block text-xs font-semibold text-slate-600 mb-1">Date et heure *</label>
+            <label class="block text-xs font-bold text-slate-700 mb-1">Date et heure *</label>
             <input type="datetime-local" id="run-date" required
-              class="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-orange-500" />
+              class="w-full border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:border-orange-500" />
           </div>
           <div>
-            <label class="block text-xs font-semibold text-slate-600 mb-1">Distance</label>
-            <input type="text" id="run-distance" placeholder="Ex: 10 km"
-              class="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-orange-500" />
+            <label class="block text-xs font-bold text-slate-700 mb-1">Distance</label>
+            <input type="text" id="run-distance" placeholder="Ex: 10 km, 21.1 km..."
+              class="w-full border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:border-orange-500" />
           </div>
         </div>
+
         <div class="grid grid-cols-2 gap-3">
           <div>
-            <label class="block text-xs font-semibold text-slate-600 mb-1">Lieu de RDV *</label>
-            <input type="text" id="run-location" required placeholder="Ex: Parking du Parc"
-              class="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-orange-500" />
+            <label class="block text-xs font-bold text-slate-700 mb-1">Lieu de rendez-vous *</label>
+            <input type="text" id="run-location" required placeholder="Ex: Entrée Parc / Place du Capitole"
+              class="w-full border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:border-orange-500" />
           </div>
           <div>
-            <label class="block text-xs font-semibold text-slate-600 mb-1">Allure prévue</label>
-            <input type="text" id="run-pace" placeholder="Ex: 5:30/km"
-              class="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-orange-500" />
+            <label class="block text-xs font-bold text-slate-700 mb-1">Allure / Niveau</label>
+            <input type="text" id="run-pace" placeholder="Ex: 5:30/km ou Tous niveaux"
+              class="w-full border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:border-orange-500" />
           </div>
         </div>
-        <div class="pt-2 flex justify-end gap-2">
-          <button type="button" onclick="toggleModal(false)" class="px-4 py-2 text-sm font-semibold text-slate-600 hover:bg-slate-100 rounded-xl cursor-pointer">Annuler</button>
-          <button type="submit" class="px-4 py-2 text-sm font-semibold bg-orange-600 hover:bg-orange-700 text-white rounded-xl cursor-pointer">Publier la sortie</button>
+
+        <div>
+          <label class="block text-xs font-bold text-slate-700 mb-1">Lien vers le site officiel de l'événement (optionnel)</label>
+          <input type="url" id="run-url" placeholder="https://www.site-de-la-course.fr"
+            class="w-full border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:border-orange-500" />
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-slate-700 mb-1">URL d'une photo d'illustration (optionnel)</label>
+          <input type="url" id="run-image" placeholder="https://... (laisser vide pour photo running auto)"
+            class="w-full border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:border-orange-500" />
+        </div>
+
+        <div class="pt-3 flex justify-end gap-2 border-t border-slate-100">
+          <button type="button" onclick="toggleModal(false)" class="px-4 py-2.5 text-sm font-semibold text-slate-600 hover:bg-slate-100 rounded-xl cursor-pointer">Annuler</button>
+          <button type="submit" class="px-5 py-2.5 text-sm font-bold bg-orange-600 hover:bg-orange-700 text-white rounded-xl shadow-sm cursor-pointer">Publier sur l'agenda</button>
         </div>
       </form>
     </div>
   </div>
 
-  <!-- LOGIQUE SUPABASE -->
+  <!-- LOGIQUE SUPABASE & CALENDRIER -->
   <script>
     // =========================================================================
     // CONFIGURATION : REMPLACEZ CES DEUX VALEURS PAR CELLES DE VOTRE SUPABASE
     // =========================================================================
     const SUPABASE_URL = 'https://nzoysgkqelpayfxwbmbd.supabase.co';
-    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im56b3lzZ2txZWxwYXlmeHdibWJkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTE4OTI2NjgsImV4cCI6MjEwNzQ2ODY2OH0.zNCG8y1HiXX-wkLOVBXQ-s-7XA3H5rEvIdIGCY7RfDU';
+    const SUPABASE_ANON_KEY = 'VOTRE-CLE-PUBLIQUE-ANON';
     // =========================================================================
 
-    // Initialisation ciblant exclusivement votre schéma isolé "running"
-    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+    const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
       db: { schema: 'running' }
     });
 
     let currentUser = null;
     let currentProfile = null;
     let allProfiles = {};
+    let allRuns = [];
+    let currentMonthDate = new Date();
+    let selectedFilterDate = null; // Format 'YYYY-MM-DD'
 
-  // 1. GESTION DE L'AUTHENTIFICATION GOOGLE
+    const DEFAULT_RUN_IMAGES = [
+      'https://images.unsplash.com/photo-1552674605-db6ffd4facb5?auto=format&fit=crop&w=800&q=80',
+      'https://images.unsplash.com/photo-1476480862126-209bfaa8edc8?auto=format&fit=crop&w=800&q=80',
+      'https://images.unsplash.com/photo-1513593771513-7b58b6c4af38?auto=format&fit=crop&w=800&q=80',
+      'https://images.unsplash.com/photo-1530143311094-34d807799e8f?auto=format&fit=crop&w=800&q=80'
+    ];
+
+    // 1. AUTHENTIFICATION GOOGLE
     async function signInWithGoogle() {
       await supabaseClient.auth.signInWithOAuth({
         provider: 'google',
@@ -174,12 +268,11 @@
           .maybeSingle();
 
         if (!existingProfile) {
-          const { data: newProf, error } = await supabaseClient.from('profiles').insert({
+          const { data: newProf } = await supabaseClient.from('profiles').insert({
             id: currentUser.id,
             full_name: currentUser.user_metadata?.full_name || currentUser.email.split('@')[0],
             avatar_url: currentUser.user_metadata?.avatar_url || ''
           }).select().single();
-          if (error) console.error('Erreur création profil:', error);
           currentProfile = newProf;
         } else {
           currentProfile = existingProfile;
@@ -195,11 +288,9 @@
     }
 
     async function initAuth() {
-      // Écoute automatique du retour de Google
       supabaseClient.auth.onAuthStateChange(async (event, session) => {
         await handleUserSession(session);
       });
-
       const { data: { session } } = await supabaseClient.auth.getSession();
       await handleUserSession(session);
       setupRealtime();
@@ -218,20 +309,20 @@
         chatSubmit.disabled = false;
 
         const adminBadge = currentProfile.role === 'admin' 
-          ? `<span class="bg-amber-100 text-amber-800 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase">Admin</span>` 
+          ? `<span class="bg-amber-100 text-amber-800 text-[10px] font-extrabold px-2 py-0.5 rounded-full uppercase">Admin</span>` 
           : '';
 
         authDiv.innerHTML = `
           <div class="flex items-center gap-2.5">
             ${adminBadge}
             <img src="${currentProfile.avatar_url || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(currentProfile.full_name)}" class="w-8 h-8 rounded-full border border-slate-200 object-cover" />
-            <span class="text-sm font-semibold hidden sm:inline">${escapeHtml(currentProfile.full_name)}</span>
+            <span class="text-sm font-bold hidden sm:inline">${escapeHtml(currentProfile.full_name)}</span>
             <button onclick="signOut()" class="text-xs text-slate-500 hover:text-red-600 font-semibold ml-2 cursor-pointer">Déconnexion</button>
           </div>
         `;
       } else {
         authDiv.innerHTML = `
-          <button onclick="signInWithGoogle()" class="bg-slate-900 hover:bg-slate-800 text-white text-sm font-semibold px-4 py-2 rounded-xl flex items-center gap-2 shadow-sm transition cursor-pointer">
+          <button onclick="signInWithGoogle()" class="bg-slate-900 hover:bg-slate-800 text-white text-sm font-bold px-4 py-2 rounded-xl flex items-center gap-2 shadow-sm transition cursor-pointer">
             <svg class="w-4 h-4" viewBox="0 0 24 24"><path fill="currentColor" d="M21.35 11.1h-9.17v2.73h6.51c-.33 3.81-3.5 5.44-6.5 5.44C8.36 19.27 5 16.25 5 12c0-4.1 3.2-7.27 7.2-7.27c3.09 0 4.9 1.97 4.9 1.97L19 4.72S16.56 2 12.1 2C6.42 2 2.03 6.8 2.03 12c0 5.05 4.13 10 10.22 10c5.35 0 9.25-3.67 9.25-9.09c0-1.15-.15-1.81-.15-1.81Z"/></svg>
             Connexion Google
           </button>
@@ -239,7 +330,110 @@
       }
     }
 
-    // 2. CHARGEMENT DES MEMBRES
+    // 2. CALENDRIER INTERACTIF
+    function renderCalendar() {
+      const year = currentMonthDate.getFullYear();
+      const month = currentMonthDate.getMonth();
+
+      const monthTitle = new Date(year, month, 1).toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' });
+      document.getElementById('calendar-month-title').textContent = monthTitle;
+
+      const firstDayIndex = (new Date(year, month, 1).getDay() + 6) % 7; // Lundi = 0
+      const daysInMonth = new Date(year, month + 1, 0).getDate();
+      const todayStr = new Date().toISOString().split('T')[0];
+
+      // Grouper les courses par jour YYYY-MM-DD
+      const runsByDay = {};
+      allRuns.forEach(r => {
+        const d = new Date(r.run_date).toLocaleDateString('sv-SE'); // format YYYY-MM-DD local
+        if (!runsByDay[d]) runsByDay[d] = [];
+        runsByDay[d].push(r);
+      });
+
+      const grid = document.getElementById('calendar-grid');
+      grid.innerHTML = '';
+
+      // Cases vides avant le 1er du mois
+      for (let i = 0; i < firstDayIndex; i++) {
+        grid.innerHTML += `<div class="h-14 sm:h-16 rounded-2xl bg-slate-50/50"></div>`;
+      }
+
+      // Jours du mois
+      for (let day = 1; day <= daysInMonth; day++) {
+        const dateObj = new Date(year, month, day);
+        const dateStr = dateObj.toLocaleDateString('sv-SE');
+        const dayRuns = runsByDay[dateStr] || [];
+        const isToday = dateStr === todayStr;
+        const isSelected = dateStr === selectedFilterDate;
+
+        let badgeHtml = '';
+        if (dayRuns.length > 0) {
+          badgeHtml = `
+            <div class="mt-1 flex items-center justify-center gap-1">
+              <span class="w-2 h-2 rounded-full bg-orange-600"></span>
+              <span class="text-[10px] font-extrabold text-orange-700 hidden sm:inline truncate max-w-[65px]">${escapeHtml(dayRuns[0].title)}</span>
+            </div>
+          `;
+        }
+
+        grid.innerHTML += `
+          <button onclick="handleDayClick('${dateStr}', ${dayRuns.length > 0})"
+            class="h-14 sm:h-16 rounded-2xl border p-1.5 flex flex-col items-center justify-start transition cursor-pointer relative group
+            ${isSelected ? 'border-orange-600 bg-orange-50 ring-2 ring-orange-500/20' : dayRuns.length > 0 ? 'border-orange-200 bg-orange-50/40 hover:border-orange-400' : 'border-slate-100 hover:border-slate-300 hover:bg-slate-50'}">
+            <span class="text-xs font-bold w-6 h-6 flex items-center justify-center rounded-full ${isToday ? 'bg-slate-900 text-white' : 'text-slate-700'}">
+              ${day}
+            </span>
+            ${badgeHtml}
+            <span class="opacity-0 group-hover:opacity-100 absolute bottom-1 right-1.5 text-[10px] font-bold text-slate-400">+</span>
+          </button>
+        `;
+      }
+    }
+
+    function handleDayClick(dateStr, hasRuns) {
+      if (hasRuns) {
+        // Si des courses existent ce jour-là, on filtre dessus (et si on reclique, on propose d'ajouter)
+        if (selectedFilterDate === dateStr) {
+          openModalWithDate(dateStr);
+        } else {
+          selectedFilterDate = dateStr;
+          document.getElementById('btn-reset-filter').classList.remove('hidden');
+          const niceDate = new Date(dateStr).toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' });
+          document.getElementById('runs-section-title').textContent = `Sorties du ${niceDate}`;
+          renderCalendar();
+          renderRunsList();
+        }
+      } else {
+        // Jour vide : ouvre directement la création à cette date si connecté
+        if (!currentUser) {
+          alert('Connecte-toi avec Google en haut à droite pour proposer une sortie à cette date !');
+          return;
+        }
+        openModalWithDate(dateStr);
+      }
+    }
+
+    function resetDateFilter() {
+      selectedFilterDate = null;
+      document.getElementById('btn-reset-filter').classList.add('hidden');
+      document.getElementById('runs-section-title').textContent = 'Toutes les prochaines sorties';
+      renderCalendar();
+      renderRunsList();
+    }
+
+    function changeMonth(delta) {
+      currentMonthDate.setMonth(currentMonthDate.getMonth() + delta);
+      renderCalendar();
+    }
+
+    function openModalWithDate(dateStr = null) {
+      if (dateStr) {
+        document.getElementById('run-date').value = `${dateStr}T09:00`;
+      }
+      toggleModal(true);
+    }
+
+    // 3. CHARGEMENT DES MEMBRES
     async function loadProfiles() {
       const { data } = await supabaseClient.from('profiles').select('*');
       allProfiles = {};
@@ -250,36 +444,53 @@
         allProfiles[p.id] = p;
         const avatar = p.avatar_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(p.full_name || 'R')}`;
         membersList.innerHTML += `
-          <div class="flex items-center gap-1.5 bg-slate-100 rounded-full pr-2.5 pl-1 py-1" title="${escapeHtml(p.full_name)}">
-            <img src="${avatar}" class="w-5 h-5 rounded-full object-cover" />
-            <span class="text-xs font-medium text-slate-700">${escapeHtml((p.full_name || 'Coureur').split(' ')[0])}</span>
+          <div class="flex items-center gap-1.5 bg-slate-100 rounded-full pr-3 pl-1 py-1" title="${escapeHtml(p.full_name)}">
+            <img src="${avatar}" class="w-6 h-6 rounded-full object-cover" />
+            <span class="text-xs font-semibold text-slate-700">${escapeHtml((p.full_name || 'Coureur').split(' ')[0])}</span>
           </div>
         `;
       });
       document.getElementById('members-count').textContent = (data || []).length;
     }
 
-    // 3. AGENDA DES SORTIES & INSCRIPTIONS
+    // 4. AGENDA DES SORTIES & INSCRIPTIONS
     async function loadRuns() {
       const { data: runs } = await supabaseClient
         .from('runs')
         .select('*, run_participants(user_id)')
         .order('run_date', { ascending: true });
 
+      allRuns = runs || [];
+      renderCalendar();
+      renderRunsList();
+    }
+
+    function renderRunsList() {
       const container = document.getElementById('runs-list');
-      if (!runs || runs.length === 0) {
-        container.innerHTML = `<div class="bg-white rounded-2xl border border-slate-200 p-8 text-center text-slate-500">Aucune sortie prévue pour le moment. Soyez le premier à en proposer une !</div>`;
+      const filteredRuns = selectedFilterDate 
+        ? allRuns.filter(r => new Date(r.run_date).toLocaleDateString('sv-SE') === selectedFilterDate)
+        : allRuns;
+
+      document.getElementById('runs-counter').textContent = `${filteredRuns.length} sortie${filteredRuns.length > 1 ? 's' : ''}`;
+
+      if (filteredRuns.length === 0) {
+        container.innerHTML = `
+          <div class="col-span-full bg-white rounded-3xl border border-slate-200 p-8 text-center space-y-3">
+            <p class="text-slate-500 text-sm">Aucune sortie prévue sur cette sélection.</p>
+            ${currentUser ? `<button onclick="openModalWithDate(selectedFilterDate)" class="bg-orange-600 text-white text-xs font-bold px-4 py-2 rounded-xl cursor-pointer">+ Planifier une sortie</button>` : ''}
+          </div>`;
         return;
       }
 
-      container.innerHTML = runs.map(run => {
+      container.innerHTML = filteredRuns.map((run, idx) => {
         const dateObj = new Date(run.run_date);
-        const dateStr = dateObj.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' });
+        const dateStr = dateObj.toLocaleDateString('fr-FR', { weekday: 'short', day: 'numeric', month: 'short' });
         const timeStr = dateObj.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
         
         const participants = run.run_participants || [];
         const isParticipating = currentUser && participants.some(p => p.user_id === currentUser.id);
         const canDelete = currentProfile && (currentProfile.role === 'admin' || run.created_by === currentUser?.id);
+        const coverImg = run.image_url || DEFAULT_RUN_IMAGES[idx % DEFAULT_RUN_IMAGES.length];
 
         const avatarsHtml = participants.map(p => {
           const prof = allProfiles[p.user_id] || { full_name: 'Coureur' };
@@ -288,36 +499,48 @@
         }).join('');
 
         return `
-          <div class="bg-white rounded-2xl border border-slate-200 p-5 shadow-xs hover:border-orange-200 transition space-y-4">
-            <div class="flex items-start justify-between gap-4">
-              <div>
-                <div class="text-xs font-bold uppercase tracking-wider text-orange-600 mb-1">${dateStr} à ${timeStr}</div>
-                <h3 class="text-lg font-extrabold text-slate-900">${escapeHtml(run.title)}</h3>
-                <div class="flex flex-wrap gap-3 mt-2 text-xs text-slate-600 font-medium">
-                  <span class="bg-slate-100 px-2.5 py-1 rounded-lg">📍 ${escapeHtml(run.location)}</span>
-                  ${run.distance ? `<span class="bg-slate-100 px-2.5 py-1 rounded-lg">📏 ${escapeHtml(run.distance)}</span>` : ''}
-                  ${run.pace ? `<span class="bg-slate-100 px-2.5 py-1 rounded-lg">⚡ ${escapeHtml(run.pace)}</span>` : ''}
-                </div>
+          <div class="bg-white rounded-3xl border border-slate-200 overflow-hidden shadow-xs hover:shadow-md hover:border-orange-200 transition flex flex-col">
+            <div class="relative h-36 bg-slate-200">
+              <img src="${escapeHtml(coverImg)}" alt="${escapeHtml(run.title)}" class="w-full h-full object-cover" />
+              <div class="absolute top-3 left-3 bg-white/95 backdrop-blur-xs text-slate-900 text-xs font-extrabold px-3 py-1 rounded-full shadow-xs uppercase">
+                ${dateStr} • ${timeStr}
               </div>
-              ${canDelete ? `<button onclick="deleteRun('${run.id}')" class="text-xs text-slate-400 hover:text-red-600 font-semibold cursor-pointer" title="Supprimer la sortie">Supprimer</button>` : ''}
+              ${canDelete ? `<button onclick="deleteRun('${run.id}')" class="absolute top-3 right-3 bg-slate-900/70 hover:bg-red-600 text-white text-[11px] font-bold px-2.5 py-1 rounded-full cursor-pointer">Supprimer</button>` : ''}
             </div>
 
-            <div class="pt-3 border-t border-slate-100 flex items-center justify-between gap-4">
-              <div class="flex items-center gap-3">
-                <div class="flex items-center pl-2">${avatarsHtml}</div>
-                <span class="text-xs font-semibold text-slate-500">${participants.length} inscrit${participants.length > 1 ? 's' : ''}</span>
+            <div class="p-5 flex-1 flex flex-col justify-between space-y-4">
+              <div>
+                <h3 class="text-lg font-extrabold text-slate-900 leading-snug">${escapeHtml(run.title)}</h3>
+                <div class="flex flex-wrap gap-2 mt-2.5 text-xs text-slate-600 font-semibold">
+                  <span class="bg-slate-100 px-2.5 py-1 rounded-lg">📍 ${escapeHtml(run.location)}</span>
+                  ${run.distance ? `<span class="bg-orange-50 text-orange-700 px-2.5 py-1 rounded-lg">📏 ${escapeHtml(run.distance)}</span>` : ''}
+                  ${run.pace ? `<span class="bg-slate-100 px-2.5 py-1 rounded-lg">⚡ ${escapeHtml(run.pace)}</span>` : ''}
+                </div>
+                ${run.event_url ? `
+                  <a href="${escapeHtml(run.event_url)}" target="_blank" rel="noopener noreferrer" 
+                     class="inline-flex items-center gap-1 mt-3 text-xs font-bold text-orange-600 hover:text-orange-700 underline">
+                    🔗 Voir le site de l'événement &rarr;
+                  </a>
+                ` : ''}
               </div>
 
-              ${currentUser ? `
-                <button onclick="toggleParticipation('${run.id}', ${isParticipating})"
-                  class="px-4 py-2 rounded-xl text-xs font-bold transition cursor-pointer ${
-                    isParticipating 
-                      ? 'bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-red-50 hover:text-red-600 hover:border-red-200' 
-                      : 'bg-orange-600 text-white hover:bg-orange-700 shadow-xs'
-                  }">
-                  ${isParticipating ? '✓ Inscrit (Se désinscrire)' : 'Je participe !'}
-                </button>
-              ` : `<span class="text-xs text-slate-400 italic">Connecte-toi pour t'inscrire</span>`}
+              <div class="pt-3 border-t border-slate-100 flex items-center justify-between gap-2">
+                <div class="flex items-center gap-2">
+                  <div class="flex items-center pl-2">${avatarsHtml}</div>
+                  <span class="text-xs font-bold text-slate-500">${participants.length} inscrit${participants.length > 1 ? 's' : ''}</span>
+                </div>
+
+                ${currentUser ? `
+                  <button onclick="toggleParticipation('${run.id}', ${isParticipating})"
+                    class="px-3.5 py-2 rounded-xl text-xs font-bold transition cursor-pointer ${
+                      isParticipating 
+                        ? 'bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-red-50 hover:text-red-600 hover:border-red-200' 
+                        : 'bg-orange-600 text-white hover:bg-orange-700 shadow-xs'
+                    }">
+                    ${isParticipating ? '✓ Inscrit' : 'Je participe'}
+                  </button>
+                ` : `<span class="text-[11px] text-slate-400 italic">Connecte-toi</span>`}
+              </div>
             </div>
           </div>
         `;
@@ -349,6 +572,8 @@
         location: document.getElementById('run-location').value,
         distance: document.getElementById('run-distance').value,
         pace: document.getElementById('run-pace').value,
+        event_url: document.getElementById('run-url').value,
+        image_url: document.getElementById('run-image').value,
         created_by: currentUser.id
       });
       e.target.reset();
@@ -356,7 +581,7 @@
       await loadRuns();
     });
 
-    // 4. CHAT EN DIRECT
+    // 5. CHAT EN DIRECT
     async function loadMessages() {
       const { data: messages } = await supabaseClient
         .from('messages')
@@ -373,7 +598,7 @@
         return `
           <div class="flex flex-col ${isMe ? 'items-end' : 'items-start'}">
             <div class="flex items-center gap-1.5 mb-0.5">
-              <span class="text-[11px] font-semibold text-slate-500">${escapeHtml(author.full_name)}</span>
+              <span class="text-[11px] font-bold text-slate-500">${escapeHtml(author.full_name)}</span>
               ${canDelete ? `<button onclick="deleteMessage('${msg.id}')" class="text-[10px] text-slate-300 hover:text-red-500 cursor-pointer">&times;</button>` : ''}
             </div>
             <div class="px-3.5 py-2 rounded-2xl text-sm max-w-[85%] ${
@@ -400,7 +625,7 @@
       await supabaseClient.from('messages').delete().eq('id', msgId);
     }
 
-    // 5. TEMPS RÉEL (SUPABASE REALTIME)
+    // 6. TEMPS RÉEL
     function setupRealtime() {
       supabaseClient.channel('running-room')
         .on('postgres_changes', { event: '*', schema: 'running', table: 'messages' }, () => loadMessages())
@@ -410,7 +635,6 @@
         .subscribe();
     }
 
-    // UTILITAIRES
     function toggleModal(show) {
       const modal = document.getElementById('run-modal');
       modal.classList.toggle('hidden', !show);
@@ -422,7 +646,6 @@
       return str.replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[m]));
     }
 
-    // Lancement
     initAuth();
   </script>
 </body>
