@@ -682,7 +682,7 @@
       await loadMessages(true);
     }
 
-    // 6. TEMPS RÉEL + FILET DE SÉCURITÉ AUTOMATIQUE
+   // 6. TEMPS RÉEL + FILET DE SÉCURITÉ AUTOMATIQUE
     let realtimeInitialized = false;
     function setupRealtime() {
       if (realtimeInitialized) return;
@@ -695,9 +695,9 @@
         .on('postgres_changes', { event: '*', schema: 'running', table: 'profiles' }, () => loadProfiles())
         .subscribe();
 
-      // Vérification silencieuse toutes les 4 secondes en secours
       setInterval(() => loadMessages(false), 4000);
     }
+
     function toggleModal(show) {
       const modal = document.getElementById('run-modal');
       modal.classList.toggle('hidden', !show);
