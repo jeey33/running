@@ -4,8 +4,9 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>RunClub — Agenda, Sorties & Communauté Running</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏃‍♂️</text></svg>">
   <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@latest"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
     body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #f8fafc; }
@@ -25,21 +26,18 @@
         <span class="font-extrabold text-xl tracking-tight text-slate-900">Run<span class="text-orange-600">Club</span></span>
       </div>
 
-      <div id="auth-section" class="flex items-center gap-3">
-        <!-- Injecté dynamiquement -->
-      </div>
+      <div id="auth-section" class="flex items-center gap-3"></div>
     </div>
   </header>
 
-  <!-- HERO BANNER AVEC PHOTO -->
+  <!-- HERO BANNER -->
   <section class="relative bg-slate-900 text-white overflow-hidden">
     <img src="https://images.unsplash.com/photo-1552674605-db6ffd4facb5?auto=format&fit=crop&w=1600&q=80" 
-         alt="Coureurs en groupe au lever du soleil" 
-         class="absolute inset-0 w-full h-full object-cover opacity-35" />
+         alt="Coureurs en groupe" class="absolute inset-0 w-full h-full object-cover opacity-35" />
     <div class="absolute inset-0 bg-gradient-to-r from-slate-950/90 via-slate-900/70 to-transparent"></div>
     
-    <div class="relative max-w-7xl mx-auto px-4 py-12 sm:py-16 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
-      <div class="max-w-2xl space-y-3">
+    <div class="relative max-w-7xl mx-auto px-4 py-10 sm:py-14 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+      <div class="max-w-2xl space-y-2.5">
         <span class="inline-block bg-orange-500/20 border border-orange-400/30 text-orange-300 text-xs font-bold uppercase tracking-wider px-3 py-1 rounded-full">
           Communauté & Partage
         </span>
@@ -48,7 +46,7 @@
           <span class="text-transparent bg-clip-text bg-gradient-to-r from-orange-400 to-amber-300">Choisis ta prochaine sortie.</span>
         </h1>
         <p class="text-slate-300 text-sm sm:text-base">
-          Clique sur une date dans le calendrier pour proposer un parcours, inscris-toi aux courses officielles avec le groupe et retrouve les coureurs au vestiaire.
+          Clique sur une date dans le calendrier pour proposer un parcours, inscris-toi aux courses avec le groupe et retrouve les copains au vestiaire.
         </p>
       </div>
 
@@ -59,118 +57,190 @@
   </section>
 
   <!-- CONTENU PRINCIPAL -->
-  <main class="max-w-7xl mx-auto px-4 py-8 flex-1 w-full grid grid-cols-1 lg:grid-cols-12 gap-8">
+  <main class="max-w-7xl mx-auto px-4 py-8 flex-1 w-full space-y-12">
     
-    <!-- COLONNE GAUCHE (8/12) : CALENDRIER INTERACTIF + LISTE DES SORTIES -->
-    <div class="lg:col-span-8 space-y-8">
+    <!-- PARTIE 1 : CALENDRIER / SORTIES + CHAT -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
       
-      <!-- BLOC CALENDRIER MENSUEL -->
-      <div class="bg-white rounded-3xl border border-slate-200 shadow-xs p-5 sm:p-6">
-        <div class="flex flex-wrap items-center justify-between gap-4 mb-5">
-          <div>
-            <h2 id="calendar-month-title" class="text-xl font-extrabold text-slate-900 capitalize">Mois Année</h2>
-            <p class="text-xs text-slate-500 mt-0.5">
-              Clique sur un jour pour <strong class="text-orange-600">créer une sortie</strong> ou voir les courses prévues.
-            </p>
+      <!-- COLONNE GAUCHE (8/12) : CALENDRIER + LISTE DES SORTIES -->
+      <div class="lg:col-span-8 space-y-8">
+        
+        <!-- CALENDRIER MENSUEL -->
+        <div class="bg-white rounded-3xl border border-slate-200 shadow-xs p-5 sm:p-6">
+          <div class="flex flex-wrap items-center justify-between gap-4 mb-5">
+            <div>
+              <h2 id="calendar-month-title" class="text-xl font-extrabold text-slate-900 capitalize">Mois Année</h2>
+              <p class="text-xs text-slate-500 mt-0.5">
+                Clique sur un jour pour <strong class="text-orange-600">créer une sortie</strong> ou filtrer les courses prévues.
+              </p>
+            </div>
+            <div class="flex items-center gap-2">
+              <button onclick="resetDateFilter()" id="btn-reset-filter" class="hidden text-xs font-semibold bg-orange-50 text-orange-700 px-3 py-1.5 rounded-xl hover:bg-orange-100 cursor-pointer">
+                Tout afficher
+              </button>
+              <button onclick="changeMonth(-1)" class="w-9 h-9 rounded-xl border border-slate-200 hover:bg-slate-50 flex items-center justify-center font-bold text-slate-600 cursor-pointer">&larr;</button>
+              <button onclick="changeMonth(1)" class="w-9 h-9 rounded-xl border border-slate-200 hover:bg-slate-50 flex items-center justify-center font-bold text-slate-600 cursor-pointer">&rarr;</button>
+            </div>
           </div>
-          <div class="flex items-center gap-2">
-            <button onclick="resetDateFilter()" id="btn-reset-filter" class="hidden text-xs font-semibold bg-orange-50 text-orange-700 px-3 py-1.5 rounded-xl hover:bg-orange-100 cursor-pointer">
-              Tout afficher
+
+          <div class="grid grid-cols-7 text-center text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">
+            <div>Lun</div><div>Mar</div><div>Mer</div><div>Jeu</div><div>Ven</div><div>Sam</div><div>Dim</div>
+          </div>
+
+          <div id="calendar-grid" class="grid grid-cols-7 gap-1.5 sm:gap-2"></div>
+        </div>
+
+        <!-- LISTE DES SORTIES -->
+        <div class="space-y-4">
+          <div class="flex items-center justify-between">
+            <h2 id="runs-section-title" class="text-xl font-extrabold text-slate-900">Toutes les prochaines sorties</h2>
+            <span id="runs-counter" class="text-xs font-bold bg-slate-200/70 text-slate-700 px-3 py-1 rounded-full">0 sortie</span>
+          </div>
+
+          <div id="runs-list" class="grid grid-cols-1 md:grid-cols-2 gap-5">
+            <div class="col-span-full text-center py-12 text-slate-400">Chargement de l'agenda...</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- COLONNE DROITE (4/12) : CHAT + MEMBRES -->
+      <div class="lg:col-span-4 space-y-6">
+        <!-- CHAT EN DIRECT -->
+        <div class="bg-white rounded-3xl border border-slate-200 shadow-xs flex flex-col h-[540px]">
+          <div class="p-4 border-b border-slate-100 flex items-center justify-between">
+            <div class="flex items-center gap-2">
+              <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
+              <h2 class="font-extrabold text-slate-900">Le Vestiaire</h2>
+              <span id="new-msg-badge" class="hidden bg-orange-600 text-white text-[10px] font-extrabold px-2 py-0.5 rounded-full animate-bounce">Nouveau !</span>
+            </div>
+            <button id="btn-excuse" onclick="sendRandomExcuse()" disabled title="Balancer une excuse bidon dans le chat"
+              class="text-[11px] font-bold bg-amber-50 text-amber-700 hover:bg-amber-100 border border-amber-200 px-2.5 py-1 rounded-lg transition disabled:opacity-40 cursor-pointer">
+              🎲 Excuse bidon
             </button>
-            <button onclick="changeMonth(-1)" class="w-9 h-9 rounded-xl border border-slate-200 hover:bg-slate-50 flex items-center justify-center font-bold text-slate-600 cursor-pointer">&larr;</button>
-            <button onclick="changeMonth(1)" class="w-9 h-9 rounded-xl border border-slate-200 hover:bg-slate-50 flex items-center justify-center font-bold text-slate-600 cursor-pointer">&rarr;</button>
           </div>
+
+          <div id="chat-messages" class="flex-1 p-4 overflow-y-auto space-y-3 chat-scroll bg-slate-50/60"></div>
+
+          <form id="chat-form" class="p-3 border-t border-slate-100 flex gap-2 bg-white rounded-b-3xl">
+            <input type="text" id="chat-input" placeholder="Connecte-toi pour discuter..." disabled
+              class="flex-1 text-sm bg-slate-100 rounded-xl px-3.5 py-2.5 focus:outline-none focus:ring-2 focus:ring-orange-500 disabled:opacity-60" />
+            <button type="submit" id="chat-submit" disabled
+              class="bg-slate-900 hover:bg-slate-800 text-white text-sm font-bold px-4 py-2.5 rounded-xl transition disabled:opacity-40 cursor-pointer">
+              Envoyer
+            </button>
+          </form>
         </div>
 
-        <!-- Jours de la semaine -->
-        <div class="grid grid-cols-7 text-center text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">
-          <div>Lun</div><div>Mar</div><div>Mer</div><div>Jeu</div><div>Ven</div><div>Sam</div><div>Dim</div>
-        </div>
-
-        <!-- Grille des jours -->
-        <div id="calendar-grid" class="grid grid-cols-7 gap-1.5 sm:gap-2">
-          <!-- Généré en JS -->
-        </div>
-      </div>
-
-      <!-- LISTE DES SORTIES -->
-      <div class="space-y-4">
-        <div class="flex items-center justify-between">
-          <h2 id="runs-section-title" class="text-xl font-extrabold text-slate-900">Toutes les prochaines sorties</h2>
-          <span id="runs-counter" class="text-xs font-bold bg-slate-200/70 text-slate-700 px-3 py-1 rounded-full">0 sortie</span>
-        </div>
-
-        <div id="runs-list" class="grid grid-cols-1 md:grid-cols-2 gap-5">
-          <div class="col-span-full text-center py-12 text-slate-400">Chargement de l'agenda...</div>
-        </div>
-      </div>
-
-      <!-- GALERIE AMBIANCE DU CLUB -->
-      <div class="pt-4 space-y-3">
-        <h3 class="text-sm font-extrabold uppercase tracking-wider text-slate-400">L'esprit du groupe</h3>
-        <div class="grid grid-cols-3 gap-3 sm:gap-4 h-36 sm:h-44">
-          <img src="https://images.unsplash.com/photo-1476480862126-209bfaa8edc8?auto=format&fit=crop&w=600&q=80" alt="Sortie trail" class="w-full h-full object-cover rounded-2xl shadow-xs" />
-          <img src="https://images.unsplash.com/photo-1513593771513-7b58b6c4af38?auto=format&fit=crop&w=600&q=80" alt="Course sur route" class="w-full h-full object-cover rounded-2xl shadow-xs" />
-          <img src="https://images.unsplash.com/photo-1530143311094-34d807799e8f?auto=format&fit=crop&w=600&q=80" alt="Départ marathon" class="w-full h-full object-cover rounded-2xl shadow-xs" />
+        <!-- MEMBRES & BADGES RIGOLOS -->
+        <div class="bg-white rounded-3xl border border-slate-200 shadow-xs p-5">
+          <div class="flex items-center justify-between mb-3">
+            <h3 class="font-extrabold text-slate-900 text-sm">La Team (<span id="members-count">0</span>)</h3>
+            <span class="text-[11px] text-slate-400">Titres & Badges</span>
+          </div>
+          <div id="members-list" class="space-y-2"></div>
         </div>
       </div>
     </div>
 
-    <!-- COLONNE DROITE (4/12) : CHAT DU GROUPE & MEMBRES -->
-    <div class="lg:col-span-4 space-y-6">
-      <!-- Chat en direct -->
-      <div class="bg-white rounded-3xl border border-slate-200 shadow-xs flex flex-col h-[540px] sticky top-24">
-        <div class="p-4 border-b border-slate-100 flex items-center justify-between">
-          <div class="flex items-center gap-2.5">
-            <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
-            <h2 class="font-extrabold text-slate-900">Le Vestiaire (Chat)</h2><span id="new-msg-badge" class="hidden bg-orange-600 text-white text-[10px] font-extrabold px-2 py-0.5 rounded-full animate-bounce">Nouveau !</span>
+    <!-- PARTIE 2 : ESPACE CLUB, DÉFIS, SONDAGES & MUR DES SOUVENIRS -->
+    <section class="pt-6 border-t border-slate-200 space-y-8">
+      <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-2">
+        <div>
+          <span class="text-xs font-extrabold uppercase tracking-wider text-orange-600">Vie du club</span>
+          <h2 class="text-2xl font-extrabold text-slate-900">Le Coin Détente & Exploits</h2>
+        </div>
+        <p class="text-xs text-slate-500">Partage tes sorties, vote pour dimanche et affiche tes plus beaux dossiers.</p>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+        
+        <!-- BLOC 1 : COMPTEUR DE KM & PODIUM DU MOIS (5/12) -->
+        <div class="lg:col-span-5 bg-white rounded-3xl border border-slate-200 shadow-xs p-6 flex flex-col justify-between space-y-5">
+          <div class="space-y-4">
+            <div class="flex items-center justify-between">
+              <h3 class="font-extrabold text-slate-900 flex items-center gap-2">🏆 Objectif Collectif du Mois</h3>
+              <span id="km-total-badge" class="text-xs font-extrabold bg-orange-100 text-orange-700 px-2.5 py-1 rounded-full">0 / 500 km</span>
+            </div>
+
+            <!-- Barre de progression -->
+            <div class="w-full bg-slate-100 h-4 rounded-full overflow-hidden p-0.5 border border-slate-200/60">
+              <div id="km-progress-bar" class="bg-gradient-to-r from-orange-500 to-amber-400 h-full rounded-full transition-all duration-500" style="width: 0%"></div>
+            </div>
+
+            <!-- Podium du groupe -->
+            <div>
+              <div class="text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-2">Top Coureurs du mois</div>
+              <div id="km-leaderboard" class="space-y-2">
+                <p class="text-xs text-slate-400 italic">Aucun kilomètre enregistré ce mois-ci.</p>
+              </div>
+            </div>
           </div>
-          <span class="text-xs font-semibold text-slate-400">En direct</span>
+
+          <!-- Formulaire rapide ajout de km -->
+          <form id="km-form" class="pt-4 border-t border-slate-100 flex gap-2">
+            <input type="number" step="0.1" min="0.5" max="200" id="km-input" required placeholder="Km (ex: 8.5)" disabled
+              class="w-28 text-sm bg-slate-100 rounded-xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-orange-500 disabled:opacity-50" />
+            <input type="text" id="km-note" placeholder="Petit mot (ex: Sous la pluie !)" disabled
+              class="flex-1 text-sm bg-slate-100 rounded-xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-orange-500 disabled:opacity-50" />
+            <button type="submit" id="km-submit" disabled
+              class="bg-orange-600 hover:bg-orange-700 text-white text-xs font-bold px-3.5 py-2 rounded-xl transition disabled:opacity-40 cursor-pointer shrink-0">
+              + Ajouter
+            </button>
+          </form>
         </div>
 
-        <div id="chat-messages" class="flex-1 p-4 overflow-y-auto space-y-3 chat-scroll bg-slate-50/60">
-          <!-- Messages injectés ici -->
+        <!-- BLOC 2 : SONDAGES EXPRESS DU GROUPE (7/12) -->
+        <div class="lg:col-span-7 bg-white rounded-3xl border border-slate-200 shadow-xs p-6 flex flex-col justify-between space-y-5">
+          <div class="space-y-4">
+            <div class="flex items-center justify-between">
+              <h3 class="font-extrabold text-slate-900 flex items-center gap-2">📊 Sondages Express</h3>
+              <button id="btn-new-poll" onclick="togglePollModal(true)" class="hidden text-xs font-bold bg-slate-900 hover:bg-slate-800 text-white px-3 py-1.5 rounded-xl cursor-pointer">
+                + Lancer un sondage
+              </button>
+            </div>
+
+            <div id="polls-list" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <p class="text-xs text-slate-400 italic col-span-full">Aucun sondage en cours. Lance une question pour le groupe !</p>
+            </div>
+          </div>
         </div>
 
-        <form id="chat-form" class="p-3 border-t border-slate-100 flex gap-2 bg-white rounded-b-3xl">
-          <input type="text" id="chat-input" placeholder="Connecte-toi pour discuter..." disabled
-            class="flex-1 text-sm bg-slate-100 rounded-xl px-3.5 py-2.5 focus:outline-none focus:ring-2 focus:ring-orange-500 disabled:opacity-60" />
-          <button type="submit" id="chat-submit" disabled
-            class="bg-slate-900 hover:bg-slate-800 text-white text-sm font-bold px-4 py-2.5 rounded-xl transition disabled:opacity-40 cursor-pointer">
-            Envoyer
+      </div>
+
+      <!-- BLOC 3 : LE MUR DES EXPLOITS & DOSSIERS (PHOTOS DES MEMBRES) -->
+      <div class="bg-white rounded-3xl border border-slate-200 shadow-xs p-6 space-y-5">
+        <div class="flex flex-wrap items-center justify-between gap-4">
+          <div>
+            <h3 class="font-extrabold text-lg text-slate-900 flex items-center gap-2">📸 Le Mur des Exploits & Dossiers</h3>
+            <p class="text-xs text-slate-500">Partage la photo de l'arrivée, du ravito ou d'une grimace en côte !</p>
+          </div>
+          <button id="btn-new-photo" onclick="togglePhotoModal(true)" class="hidden bg-orange-600 hover:bg-orange-700 text-white text-xs font-bold px-4 py-2.5 rounded-xl shadow-xs cursor-pointer flex items-center gap-1.5">
+            <span>📷</span> Poster une photo
           </button>
-        </form>
-      </div>
+        </div>
 
-      <!-- Liste des coureurs inscrits sur le site -->
-      <div class="bg-white rounded-3xl border border-slate-200 shadow-xs p-5">
-        <h3 class="font-extrabold text-slate-900 text-sm mb-3">Coureurs inscrits (<span id="members-count">0</span>)</h3>
-        <div id="members-list" class="flex flex-wrap gap-2">
-          <!-- Avatars des membres -->
+        <div id="photos-grid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+          <p class="text-xs text-slate-400 italic col-span-full py-6 text-center">Aucune photo postée pour le moment. Inaugure le mur !</p>
         </div>
       </div>
-    </div>
+
+    </section>
 
   </main>
 
-  <!-- MODALE : CRÉER / PROPOSER UNE SORTIE -->
+  <!-- MODALE 1 : CRÉER UNE SORTIE -->
   <div id="run-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs hidden items-center justify-center p-4 z-50">
     <div class="bg-white rounded-3xl max-w-lg w-full p-6 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto">
       <div class="flex items-center justify-between border-b border-slate-100 pb-3">
-        <div>
-          <h2 class="text-lg font-extrabold text-slate-900">Planifier une sortie / course</h2>
-          <p class="text-xs text-slate-500">Partage les infos pour motiver le groupe à te rejoindre.</p>
-        </div>
+        <h2 class="text-lg font-extrabold text-slate-900">Planifier une sortie / course</h2>
         <button onclick="toggleModal(false)" class="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold cursor-pointer">&times;</button>
       </div>
-
       <form id="new-run-form" class="space-y-3.5">
         <div>
           <label class="block text-xs font-bold text-slate-700 mb-1">Nom de la sortie ou de la course *</label>
-          <input type="text" id="run-title" required placeholder="Ex: Semi-Marathon de Toulouse / Sortie Canal"
+          <input type="text" id="run-title" required placeholder="Ex: Sortie longue Canal / Semi-Marathon"
             class="w-full border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:border-orange-500" />
         </div>
-
         <div class="grid grid-cols-2 gap-3">
           <div>
             <label class="block text-xs font-bold text-slate-700 mb-1">Date et heure *</label>
@@ -179,51 +249,109 @@
           </div>
           <div>
             <label class="block text-xs font-bold text-slate-700 mb-1">Distance</label>
-            <input type="text" id="run-distance" placeholder="Ex: 10 km, 21.1 km..."
+            <input type="text" id="run-distance" placeholder="Ex: 10 km"
               class="w-full border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:border-orange-500" />
           </div>
         </div>
-
         <div class="grid grid-cols-2 gap-3">
           <div>
-            <label class="block text-xs font-bold text-slate-700 mb-1">Lieu de rendez-vous *</label>
-            <input type="text" id="run-location" required placeholder="Ex: Entrée Parc / Place du Capitole"
+            <label class="block text-xs font-bold text-slate-700 mb-1">Lieu de RDV *</label>
+            <input type="text" id="run-location" required placeholder="Ex: Parking du Parc"
               class="w-full border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:border-orange-500" />
           </div>
           <div>
             <label class="block text-xs font-bold text-slate-700 mb-1">Allure / Niveau</label>
-            <input type="text" id="run-pace" placeholder="Ex: 5:30/km ou Tous niveaux"
+            <input type="text" id="run-pace" placeholder="Ex: 5:30/km"
               class="w-full border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:border-orange-500" />
           </div>
         </div>
-
         <div>
-          <label class="block text-xs font-bold text-slate-700 mb-1">Lien vers le site officiel de l'événement (optionnel)</label>
-          <input type="url" id="run-url" placeholder="https://www.site-de-la-course.fr"
+          <label class="block text-xs font-bold text-slate-700 mb-1">Lien vers le site de l'événement (optionnel)</label>
+          <input type="url" id="run-url" placeholder="https://..."
             class="w-full border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:border-orange-500" />
         </div>
-
         <div>
-          <label class="block text-xs font-bold text-slate-700 mb-1">URL d'une photo d'illustration (optionnel)</label>
-          <input type="url" id="run-image" placeholder="https://... (laisser vide pour photo running auto)"
+          <label class="block text-xs font-bold text-slate-700 mb-1">URL d'une photo (optionnel)</label>
+          <input type="url" id="run-image" placeholder="https://..."
             class="w-full border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:border-orange-500" />
         </div>
-
         <div class="pt-3 flex justify-end gap-2 border-t border-slate-100">
-          <button type="button" onclick="toggleModal(false)" class="px-4 py-2.5 text-sm font-semibold text-slate-600 hover:bg-slate-100 rounded-xl cursor-pointer">Annuler</button>
-          <button type="submit" class="px-5 py-2.5 text-sm font-bold bg-orange-600 hover:bg-orange-700 text-white rounded-xl shadow-sm cursor-pointer">Publier sur l'agenda</button>
+          <button type="button" onclick="toggleModal(false)" class="px-4 py-2 text-sm font-semibold text-slate-600 hover:bg-slate-100 rounded-xl cursor-pointer">Annuler</button>
+          <button type="submit" class="px-5 py-2 text-sm font-bold bg-orange-600 hover:bg-orange-700 text-white rounded-xl cursor-pointer">Publier</button>
         </div>
       </form>
     </div>
   </div>
 
-  <!-- LOGIQUE SUPABASE & CALENDRIER -->
+  <!-- MODALE 2 : CRÉER UN SONDAGE -->
+  <div id="poll-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs hidden items-center justify-center p-4 z-50">
+    <div class="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl space-y-4">
+      <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+        <h2 class="text-lg font-extrabold text-slate-900">Nouveau sondage</h2>
+        <button onclick="togglePollModal(false)" class="w-8 h-8 rounded-full bg-slate-100 text-slate-600 font-bold cursor-pointer">&times;</button>
+      </div>
+      <form id="new-poll-form" class="space-y-3">
+        <div>
+          <label class="block text-xs font-bold text-slate-700 mb-1">Question *</label>
+          <input type="text" id="poll-question" required placeholder="Ex: Dimanche matin, on fait quoi ?"
+            class="w-full border border-slate-200 rounded-xl px-3.5 py-2 text-sm" />
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-slate-700 mb-1">Choix 1 *</label>
+          <input type="text" id="poll-opt1" required placeholder="Ex: 12 km tranquille"
+            class="w-full border border-slate-200 rounded-xl px-3.5 py-2 text-sm" />
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-slate-700 mb-1">Choix 2 *</label>
+          <input type="text" id="poll-opt2" required placeholder="Ex: 8 km + croissants"
+            class="w-full border border-slate-200 rounded-xl px-3.5 py-2 text-sm" />
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-slate-700 mb-1">Choix 3 (optionnel)</label>
+          <input type="text" id="poll-opt3" placeholder="Ex: Grasse mat' sous la couette"
+            class="w-full border border-slate-200 rounded-xl px-3.5 py-2 text-sm" />
+        </div>
+        <div class="pt-2 flex justify-end gap-2">
+          <button type="button" onclick="togglePollModal(false)" class="px-4 py-2 text-sm font-semibold text-slate-600 rounded-xl cursor-pointer">Annuler</button>
+          <button type="submit" class="px-4 py-2 text-sm font-bold bg-slate-900 text-white rounded-xl cursor-pointer">Lancer</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODALE 3 : POSTER UNE PHOTO -->
+  <div id="photo-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs hidden items-center justify-center p-4 z-50">
+    <div class="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl space-y-4">
+      <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+        <h2 class="text-lg font-extrabold text-slate-900">Ajouter une photo souvenir</h2>
+        <button onclick="togglePhotoModal(false)" class="w-8 h-8 rounded-full bg-slate-100 text-slate-600 font-bold cursor-pointer">&times;</button>
+      </div>
+      <form id="new-photo-form" class="space-y-3">
+        <div>
+          <label class="block text-xs font-bold text-slate-700 mb-1">Choisir une photo (téléphone ou PC) *</label>
+          <input type="file" id="photo-file" accept="image/*" required
+            class="w-full text-xs text-slate-500 file:mr-3 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-orange-50 file:text-orange-700 hover:file:bg-orange-100" />
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-slate-700 mb-1">Légende rigolote *</label>
+          <input type="text" id="photo-caption" required placeholder="Ex: Après la côte de 15%, toujours le sourire !"
+            class="w-full border border-slate-200 rounded-xl px-3.5 py-2 text-sm" />
+        </div>
+        <div class="pt-2 flex justify-end gap-2">
+          <button type="button" onclick="togglePhotoModal(false)" class="px-4 py-2 text-sm font-semibold text-slate-600 rounded-xl cursor-pointer">Annuler</button>
+          <button type="submit" id="photo-submit" class="px-4 py-2 text-sm font-bold bg-orange-600 text-white rounded-xl cursor-pointer">Publier la photo</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- LOGIQUE SUPABASE -->
   <script>
     // =========================================================================
     // CONFIGURATION : REMPLACEZ CES DEUX VALEURS PAR CELLES DE VOTRE SUPABASE
     // =========================================================================
     const SUPABASE_URL = 'https://nzoysgkqelpayfxwbmbd.supabase.co';
-    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im56b3lzZ2txZWxwYXlmeHdibWJkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTE4OTI2NjgsImV4cCI6MjEwNzQ2ODY2OH0.zNCG8y1HiXX-wkLOVBXQ-s-7XA3H5rEvIdIGCY7RfDU';
+    const SUPABASE_ANON_KEY = 'VOTRE-CLE-PUBLIQUE-ANON';
     // =========================================================================
 
     const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
@@ -235,7 +363,8 @@
     let allProfiles = {};
     let allRuns = [];
     let currentMonthDate = new Date();
-    let selectedFilterDate = null; // Format 'YYYY-MM-DD'
+    let selectedFilterDate = null;
+    let lastMessageCount = 0;
 
     const DEFAULT_RUN_IMAGES = [
       'https://images.unsplash.com/photo-1552674605-db6ffd4facb5?auto=format&fit=crop&w=800&q=80',
@@ -244,12 +373,22 @@
       'https://images.unsplash.com/photo-1530143311094-34d807799e8f?auto=format&fit=crop&w=800&q=80'
     ];
 
-    // 1. AUTHENTIFICATION GOOGLE
+    const FUNNY_EXCUSES = [
+      "🎲 Excuse du jour : J'ai une pointe au mollet gauche depuis que j'ai vu le dénivelé.",
+      "🎲 Excuse du jour : Mon GPS met 20 minutes à capter les satellites, je vous rattrape au ravito.",
+      "🎲 Excuse du jour : J'ai mangé une raclette hier soir, je suis en pleine charge glycémique.",
+      "🎲 Excuse du jour : Mes chaussures sont en rodage, je ne peux pas dépasser 6:30/km.",
+      "🎲 Excuse du jour : Il y a un vent de face de 4 km/h, c'est pas optimal pour mes chronos.",
+      "🎲 Excuse du jour : Je garde mon énergie pour le sprint final vers la boulangerie."
+    ];
+
+    // 1. AUTHENTIFICATION
     async function signInWithGoogle() {
-      await supabaseClient.auth.signInWithOAuth({
+      const { error } = await supabaseClient.auth.signInWithOAuth({
         provider: 'google',
         options: { redirectTo: window.location.origin }
       });
+      if (error) alert('Erreur connexion : ' + error.message);
     }
 
     async function signOut() {
@@ -284,7 +423,10 @@
       renderAuthUI();
       await loadProfiles();
       await loadRuns();
-      await loadMessages();
+      await loadMessages(true);
+      await loadKmLogs();
+      await loadPolls();
+      await loadPhotos();
     }
 
     async function initAuth() {
@@ -298,16 +440,22 @@
 
     function renderAuthUI() {
       const authDiv = document.getElementById('auth-section');
-      const btnModal = document.getElementById('btn-open-modal');
-      const chatInput = document.getElementById('chat-input');
-      const chatSubmit = document.getElementById('chat-submit');
+      const isLogged = Boolean(currentUser && currentProfile);
 
-      if (currentUser && currentProfile) {
-        btnModal.classList.remove('hidden');
-        chatInput.disabled = false;
-        chatInput.placeholder = "Écrire un message au groupe...";
-        chatSubmit.disabled = false;
+      document.getElementById('btn-open-modal').classList.toggle('hidden', !isLogged);
+      document.getElementById('btn-new-poll').classList.toggle('hidden', !isLogged);
+      document.getElementById('btn-new-photo').classList.toggle('hidden', !isLogged);
 
+      document.getElementById('chat-input').disabled = !isLogged;
+      document.getElementById('chat-input').placeholder = isLogged ? "Écrire un message au groupe..." : "Connecte-toi pour discuter...";
+      document.getElementById('chat-submit').disabled = !isLogged;
+      document.getElementById('btn-excuse').disabled = !isLogged;
+
+      document.getElementById('km-input').disabled = !isLogged;
+      document.getElementById('km-note').disabled = !isLogged;
+      document.getElementById('km-submit').disabled = !isLogged;
+
+      if (isLogged) {
         const adminBadge = currentProfile.role === 'admin' 
           ? `<span class="bg-amber-100 text-amber-800 text-[10px] font-extrabold px-2 py-0.5 rounded-full uppercase">Admin</span>` 
           : '';
@@ -330,22 +478,57 @@
       }
     }
 
-    // 2. CALENDRIER INTERACTIF
+    // 2. MEMBRES & BADGES RIGOLOS
+    async function loadProfiles() {
+      const { data } = await supabaseClient.from('profiles').select('*');
+      allProfiles = {};
+      const membersList = document.getElementById('members-list');
+      membersList.innerHTML = '';
+
+      (data || []).forEach(p => {
+        allProfiles[p.id] = p;
+        const avatar = p.avatar_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(p.full_name || 'R')}`;
+        const canEditBadge = currentProfile && (currentProfile.role === 'admin' || currentProfile.id === p.id);
+        const badgeHtml = p.badge 
+          ? `<span class="bg-orange-50 text-orange-700 border border-orange-200/70 text-[10px] font-bold px-2 py-0.5 rounded-full">${escapeHtml(p.badge)}</span>` 
+          : '';
+
+        membersList.innerHTML += `
+          <div class="flex items-center justify-between bg-slate-50 rounded-2xl px-3 py-2 border border-slate-100">
+            <div class="flex items-center gap-2 min-w-0">
+              <img src="${avatar}" class="w-7 h-7 rounded-full object-cover shrink-0" />
+              <div class="truncate">
+                <div class="text-xs font-bold text-slate-800 truncate">${escapeHtml(p.full_name || 'Coureur')}</div>
+                ${badgeHtml}
+              </div>
+            </div>
+            ${canEditBadge ? `<button onclick="editMemberBadge('${p.id}', '${escapeHtml(p.badge || '')}')" class="text-xs text-slate-400 hover:text-orange-600 px-1.5 cursor-pointer" title="Modifier le titre rigolo">✏️</button>` : ''}
+          </div>
+        `;
+      });
+      document.getElementById('members-count').textContent = (data || []).length;
+    }
+
+    async function editMemberBadge(userId, currentBadge) {
+      const newBadge = prompt("Quel titre rigolo attribuer ? (ex: Roi du Ravito, Allergique aux côtes, Diesel...)", currentBadge);
+      if (newBadge === null) return;
+      await supabaseClient.from('profiles').update({ badge: newBadge.trim() }).eq('id', userId);
+      await loadProfiles();
+    }
+
+    // 3. CALENDRIER & SORTIES
     function renderCalendar() {
       const year = currentMonthDate.getFullYear();
       const month = currentMonthDate.getMonth();
+      document.getElementById('calendar-month-title').textContent = new Date(year, month, 1).toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' });
 
-      const monthTitle = new Date(year, month, 1).toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' });
-      document.getElementById('calendar-month-title').textContent = monthTitle;
-
-      const firstDayIndex = (new Date(year, month, 1).getDay() + 6) % 7; // Lundi = 0
+      const firstDayIndex = (new Date(year, month, 1).getDay() + 6) % 7;
       const daysInMonth = new Date(year, month + 1, 0).getDate();
-      const todayStr = new Date().toISOString().split('T')[0];
+      const todayStr = new Date().toLocaleDateString('sv-SE');
 
-      // Grouper les courses par jour YYYY-MM-DD
       const runsByDay = {};
       allRuns.forEach(r => {
-        const d = new Date(r.run_date).toLocaleDateString('sv-SE'); // format YYYY-MM-DD local
+        const d = new Date(r.run_date).toLocaleDateString('sv-SE');
         if (!runsByDay[d]) runsByDay[d] = [];
         runsByDay[d].push(r);
       });
@@ -353,46 +536,34 @@
       const grid = document.getElementById('calendar-grid');
       grid.innerHTML = '';
 
-      // Cases vides avant le 1er du mois
       for (let i = 0; i < firstDayIndex; i++) {
         grid.innerHTML += `<div class="h-14 sm:h-16 rounded-2xl bg-slate-50/50"></div>`;
       }
 
-      // Jours du mois
       for (let day = 1; day <= daysInMonth; day++) {
-        const dateObj = new Date(year, month, day);
-        const dateStr = dateObj.toLocaleDateString('sv-SE');
+        const dateStr = new Date(year, month, day).toLocaleDateString('sv-SE');
         const dayRuns = runsByDay[dateStr] || [];
         const isToday = dateStr === todayStr;
         const isSelected = dateStr === selectedFilterDate;
 
-        let badgeHtml = '';
-        if (dayRuns.length > 0) {
-          badgeHtml = `
-            <div class="mt-1 flex items-center justify-center gap-1">
-              <span class="w-2 h-2 rounded-full bg-orange-600"></span>
-              <span class="text-[10px] font-extrabold text-orange-700 hidden sm:inline truncate max-w-[65px]">${escapeHtml(dayRuns[0].title)}</span>
-            </div>
-          `;
-        }
+        const badgeHtml = dayRuns.length > 0 ? `
+          <div class="mt-1 flex items-center justify-center gap-1">
+            <span class="w-2 h-2 rounded-full bg-orange-600"></span>
+            <span class="text-[10px] font-extrabold text-orange-700 hidden sm:inline truncate max-w-[65px]">${escapeHtml(dayRuns[0].title)}</span>
+          </div>` : '';
 
         grid.innerHTML += `
           <button onclick="handleDayClick('${dateStr}', ${dayRuns.length > 0})"
             class="h-14 sm:h-16 rounded-2xl border p-1.5 flex flex-col items-center justify-start transition cursor-pointer relative group
             ${isSelected ? 'border-orange-600 bg-orange-50 ring-2 ring-orange-500/20' : dayRuns.length > 0 ? 'border-orange-200 bg-orange-50/40 hover:border-orange-400' : 'border-slate-100 hover:border-slate-300 hover:bg-slate-50'}">
-            <span class="text-xs font-bold w-6 h-6 flex items-center justify-center rounded-full ${isToday ? 'bg-slate-900 text-white' : 'text-slate-700'}">
-              ${day}
-            </span>
+            <span class="text-xs font-bold w-6 h-6 flex items-center justify-center rounded-full ${isToday ? 'bg-slate-900 text-white' : 'text-slate-700'}">${day}</span>
             ${badgeHtml}
-            <span class="opacity-0 group-hover:opacity-100 absolute bottom-1 right-1.5 text-[10px] font-bold text-slate-400">+</span>
-          </button>
-        `;
+          </button>`;
       }
     }
 
     function handleDayClick(dateStr, hasRuns) {
       if (hasRuns) {
-        // Si des courses existent ce jour-là, on filtre dessus (et si on reclique, on propose d'ajouter)
         if (selectedFilterDate === dateStr) {
           openModalWithDate(dateStr);
         } else {
@@ -404,7 +575,6 @@
           renderRunsList();
         }
       } else {
-        // Jour vide : ouvre directement la création à cette date si connecté
         if (!currentUser) {
           alert('Connecte-toi avec Google en haut à droite pour proposer une sortie à cette date !');
           return;
@@ -427,39 +597,12 @@
     }
 
     function openModalWithDate(dateStr = null) {
-      if (dateStr) {
-        document.getElementById('run-date').value = `${dateStr}T09:00`;
-      }
+      if (dateStr) document.getElementById('run-date').value = `${dateStr}T09:00`;
       toggleModal(true);
     }
 
-    // 3. CHARGEMENT DES MEMBRES
-    async function loadProfiles() {
-      const { data } = await supabaseClient.from('profiles').select('*');
-      allProfiles = {};
-      const membersList = document.getElementById('members-list');
-      membersList.innerHTML = '';
-
-      (data || []).forEach(p => {
-        allProfiles[p.id] = p;
-        const avatar = p.avatar_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(p.full_name || 'R')}`;
-        membersList.innerHTML += `
-          <div class="flex items-center gap-1.5 bg-slate-100 rounded-full pr-3 pl-1 py-1" title="${escapeHtml(p.full_name)}">
-            <img src="${avatar}" class="w-6 h-6 rounded-full object-cover" />
-            <span class="text-xs font-semibold text-slate-700">${escapeHtml((p.full_name || 'Coureur').split(' ')[0])}</span>
-          </div>
-        `;
-      });
-      document.getElementById('members-count').textContent = (data || []).length;
-    }
-
-    // 4. AGENDA DES SORTIES & INSCRIPTIONS
     async function loadRuns() {
-      const { data: runs } = await supabaseClient
-        .from('runs')
-        .select('*, run_participants(user_id)')
-        .order('run_date', { ascending: true });
-
+      const { data: runs } = await supabaseClient.from('runs').select('*, run_participants(user_id)').order('run_date', { ascending: true });
       allRuns = runs || [];
       renderCalendar();
       renderRunsList();
@@ -474,11 +617,7 @@
       document.getElementById('runs-counter').textContent = `${filteredRuns.length} sortie${filteredRuns.length > 1 ? 's' : ''}`;
 
       if (filteredRuns.length === 0) {
-        container.innerHTML = `
-          <div class="col-span-full bg-white rounded-3xl border border-slate-200 p-8 text-center space-y-3">
-            <p class="text-slate-500 text-sm">Aucune sortie prévue sur cette sélection.</p>
-            ${currentUser ? `<button onclick="openModalWithDate(selectedFilterDate)" class="bg-orange-600 text-white text-xs font-bold px-4 py-2 rounded-xl cursor-pointer">+ Planifier une sortie</button>` : ''}
-          </div>`;
+        container.innerHTML = `<div class="col-span-full bg-white rounded-3xl border border-slate-200 p-8 text-center text-slate-500 text-sm">Aucune sortie prévue sur cette sélection.</div>`;
         return;
       }
 
@@ -486,64 +625,53 @@
         const dateObj = new Date(run.run_date);
         const dateStr = dateObj.toLocaleDateString('fr-FR', { weekday: 'short', day: 'numeric', month: 'short' });
         const timeStr = dateObj.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
-        
         const participants = run.run_participants || [];
         const isParticipating = currentUser && participants.some(p => p.user_id === currentUser.id);
         const canDelete = currentProfile && (currentProfile.role === 'admin' || run.created_by === currentUser?.id);
         const coverImg = run.image_url || DEFAULT_RUN_IMAGES[idx % DEFAULT_RUN_IMAGES.length];
 
-        const avatarsHtml = participants.map(p => {
-          const prof = allProfiles[p.user_id] || { full_name: 'Coureur' };
-          const img = prof.avatar_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(prof.full_name)}`;
-          return `<img src="${img}" title="${escapeHtml(prof.full_name)}" class="w-7 h-7 rounded-full border-2 border-white -ml-2 first:ml-0 object-cover" />`;
-        }).join('');
+        const participantsBadges = participants.length > 0 
+          ? participants.map(p => {
+              const prof = allProfiles[p.user_id] || { full_name: 'Coureur' };
+              const firstName = (prof.full_name || 'Coureur').split(' ')[0];
+              const img = prof.avatar_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(prof.full_name)}`;
+              return `<span class="inline-flex items-center gap-1.5 bg-slate-100 border border-slate-200/80 rounded-full pl-1 pr-2.5 py-0.5 text-[11px] font-semibold text-slate-700"><img src="${img}" class="w-4 h-4 rounded-full object-cover" />${escapeHtml(firstName)}</span>`;
+            }).join('')
+          : `<span class="text-xs text-slate-400 italic">Sois le premier à t'inscrire !</span>`;
 
         return `
-          <div class="bg-white rounded-3xl border border-slate-200 overflow-hidden shadow-xs hover:shadow-md hover:border-orange-200 transition flex flex-col">
+          <div class="bg-white rounded-3xl border ${isParticipating ? 'border-emerald-300 ring-2 ring-emerald-500/10' : 'border-slate-200'} overflow-hidden shadow-xs hover:shadow-md transition flex flex-col">
             <div class="relative h-36 bg-slate-200">
-              <img src="${escapeHtml(coverImg)}" alt="${escapeHtml(run.title)}" class="w-full h-full object-cover" />
-              <div class="absolute top-3 left-3 bg-white/95 backdrop-blur-xs text-slate-900 text-xs font-extrabold px-3 py-1 rounded-full shadow-xs uppercase">
-                ${dateStr} • ${timeStr}
-              </div>
+              <img src="${escapeHtml(coverImg)}" class="w-full h-full object-cover" />
+              <div class="absolute top-3 left-3 bg-white/95 text-slate-900 text-xs font-extrabold px-3 py-1 rounded-full uppercase">${dateStr} • ${timeStr}</div>
+              ${isParticipating ? `<div class="absolute bottom-3 left-3 bg-emerald-600 text-white text-[11px] font-extrabold px-3 py-1 rounded-full">✓ Tu participes</div>` : ''}
               ${canDelete ? `<button onclick="deleteRun('${run.id}')" class="absolute top-3 right-3 bg-slate-900/70 hover:bg-red-600 text-white text-[11px] font-bold px-2.5 py-1 rounded-full cursor-pointer">Supprimer</button>` : ''}
             </div>
-
             <div class="p-5 flex-1 flex flex-col justify-between space-y-4">
               <div>
-                <h3 class="text-lg font-extrabold text-slate-900 leading-snug">${escapeHtml(run.title)}</h3>
-                <div class="flex flex-wrap gap-2 mt-2.5 text-xs text-slate-600 font-semibold">
+                <h3 class="text-lg font-extrabold text-slate-900">${escapeHtml(run.title)}</h3>
+                <div class="flex flex-wrap gap-2 mt-2 text-xs text-slate-600 font-semibold">
                   <span class="bg-slate-100 px-2.5 py-1 rounded-lg">📍 ${escapeHtml(run.location)}</span>
                   ${run.distance ? `<span class="bg-orange-50 text-orange-700 px-2.5 py-1 rounded-lg">📏 ${escapeHtml(run.distance)}</span>` : ''}
                   ${run.pace ? `<span class="bg-slate-100 px-2.5 py-1 rounded-lg">⚡ ${escapeHtml(run.pace)}</span>` : ''}
                 </div>
-                ${run.event_url ? `
-                  <a href="${escapeHtml(run.event_url)}" target="_blank" rel="noopener noreferrer" 
-                     class="inline-flex items-center gap-1 mt-3 text-xs font-bold text-orange-600 hover:text-orange-700 underline">
-                    🔗 Voir le site de l'événement &rarr;
-                  </a>
-                ` : ''}
+                ${run.event_url ? `<a href="${escapeHtml(run.event_url)}" target="_blank" class="inline-flex items-center gap-1 mt-3 text-xs font-bold text-orange-600 underline">🔗 Site de l'événement &rarr;</a>` : ''}
               </div>
-
-              <div class="pt-3 border-t border-slate-100 flex items-center justify-between gap-2">
-                <div class="flex items-center gap-2">
-                  <div class="flex items-center pl-2">${avatarsHtml}</div>
-                  <span class="text-xs font-bold text-slate-500">${participants.length} inscrit${participants.length > 1 ? 's' : ''}</span>
+              <div class="pt-3 border-t border-slate-100 space-y-3">
+                <div>
+                  <div class="text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-1.5">Qui sera là (${participants.length}) :</div>
+                  <div class="flex flex-wrap gap-1.5">${participantsBadges}</div>
                 </div>
-
                 ${currentUser ? `
                   <button onclick="toggleParticipation('${run.id}', ${isParticipating})"
-                    class="px-3.5 py-2 rounded-xl text-xs font-bold transition cursor-pointer ${
-                      isParticipating 
-                        ? 'bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-red-50 hover:text-red-600 hover:border-red-200' 
-                        : 'bg-orange-600 text-white hover:bg-orange-700 shadow-xs'
+                    class="w-full py-2.5 px-4 rounded-xl text-xs font-extrabold transition cursor-pointer ${
+                      isParticipating ? 'bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-red-50 hover:text-red-600' : 'bg-orange-600 text-white hover:bg-orange-700 shadow-sm'
                     }">
-                    ${isParticipating ? '✓ Inscrit' : 'Je participe'}
-                  </button>
-                ` : `<span class="text-[11px] text-slate-400 italic">Connecte-toi</span>`}
+                    ${isParticipating ? '✓ J\'y serai ! (Annuler)' : '🙋‍♂️ J\'y serai ! (Je participe)'}
+                  </button>` : ''}
               </div>
             </div>
-          </div>
-        `;
+          </div>`;
       }).join('');
     }
 
@@ -581,9 +709,7 @@
       await loadRuns();
     });
 
-   // 5. CHAT EN DIRECT AVEC NOTIFICATION & RETOUR VISUEL
-    let lastMessageCount = 0;
-
+    // 4. CHAT EN DIRECT + EXCUSES BIDONS
     function playNotificationSound() {
       try {
         const ctx = new (window.AudioContext || window.webkitAudioContext)();
@@ -601,16 +727,10 @@
     }
 
     async function loadMessages(isInitial = false) {
-      const { data: messages } = await supabaseClient
-        .from('messages')
-        .select('*')
-        .order('created_at', { ascending: true })
-        .limit(50);
-
+      const { data: messages } = await supabaseClient.from('messages').select('*').order('created_at', { ascending: true }).limit(50);
       const list = messages || [];
       const chatBox = document.getElementById('chat-messages');
 
-      // Détecter l'arrivée d'un nouveau message d'un autre membre
       if (!isInitial && list.length > lastMessageCount) {
         const newest = list[list.length - 1];
         if (newest && newest.user_id !== currentUser?.id) {
@@ -637,13 +757,12 @@
               <span class="text-[10px] text-slate-400">${timeStr}</span>
               ${canDelete ? `<button onclick="deleteMessage('${msg.id}')" class="text-[10px] text-slate-300 hover:text-red-500 cursor-pointer">&times;</button>` : ''}
             </div>
-            <div class="px-3.5 py-2 rounded-2xl text-sm max-w-[85%] shadow-2xs ${
+            <div class="px-3.5 py-2 rounded-2xl text-sm max-w-[85%] ${
               isMe ? 'bg-orange-600 text-white rounded-br-xs' : 'bg-white border border-slate-200 text-slate-800 rounded-bl-xs'
             }">
               ${escapeHtml(msg.content)}
             </div>
-          </div>
-        `;
+          </div>`;
       }).join('');
       chatBox.scrollTop = chatBox.scrollHeight;
     }
@@ -651,38 +770,240 @@
     document.getElementById('chat-form').addEventListener('submit', async (e) => {
       e.preventDefault();
       const input = document.getElementById('chat-input');
-      const submitBtn = document.getElementById('chat-submit');
       const content = input.value.trim();
       if (!content || !currentUser) return;
-
-      // Retour visuel immédiat pendant l'envoi
       input.value = '';
-      submitBtn.disabled = true;
-      submitBtn.textContent = '...';
-
-      const { error } = await supabaseClient.from('messages').insert({
-        user_id: currentUser.id,
-        content
-      });
-
-      submitBtn.disabled = false;
-      submitBtn.textContent = 'Envoyer';
-
-      if (error) {
-        alert("Erreur lors de l'envoi : " + error.message);
-        input.value = content;
-      } else {
-        // Affichage immédiat sans attendre le rafraîchissement
-        await loadMessages(false);
-      }
+      await supabaseClient.from('messages').insert({ user_id: currentUser.id, content });
+      await loadMessages(false);
     });
+
+    async function sendRandomExcuse() {
+      if (!currentUser) return;
+      const excuse = FUNNY_EXCUSES[Math.floor(Math.random() * FUNNY_EXCUSES.length)];
+      await supabaseClient.from('messages').insert({ user_id: currentUser.id, content: excuse });
+      await loadMessages(false);
+    }
 
     async function deleteMessage(msgId) {
       await supabaseClient.from('messages').delete().eq('id', msgId);
       await loadMessages(true);
     }
 
-   // 6. TEMPS RÉEL + FILET DE SÉCURITÉ AUTOMATIQUE
+    // 5. COMPTEUR DE KM & PODIUM DU MOIS
+    async function loadKmLogs() {
+      const startOfMonth = new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString();
+      const { data: logs } = await supabaseClient.from('km_logs').select('*').gte('created_at', startOfMonth);
+      const list = logs || [];
+
+      const totalKm = list.reduce((acc, item) => acc + Number(item.km), 0);
+      const goal = 500;
+      const pct = Math.min(100, Math.round((totalKm / goal) * 100));
+
+      document.getElementById('km-total-badge').textContent = `${totalKm.toFixed(1)} / ${goal} km`;
+      document.getElementById('km-progress-bar').style.width = `${pct}%`;
+
+      // Calcul du classement par coureur
+      const byUser = {};
+      list.forEach(l => { byUser[l.user_id] = (byUser[l.user_id] || 0) + Number(l.km); });
+      const sorted = Object.entries(byUser).sort((a, b) => b[1] - a[1]).slice(0, 4);
+
+      const board = document.getElementById('km-leaderboard');
+      if (sorted.length === 0) {
+        board.innerHTML = `<p class="text-xs text-slate-400 italic">Aucun kilomètre enregistré ce mois-ci.</p>`;
+        return;
+      }
+
+      const medals = ['🥇', '🥈', '🥉', '🏃'];
+      board.innerHTML = sorted.map(([uid, km], i) => {
+        const prof = allProfiles[uid] || { full_name: 'Coureur' };
+        return `
+          <div class="flex items-center justify-between text-xs bg-slate-50 px-3 py-2 rounded-xl">
+            <span class="font-bold text-slate-700">${medals[i]} ${escapeHtml(prof.full_name)}</span>
+            <span class="font-extrabold text-orange-600">${km.toFixed(1)} km</span>
+          </div>`;
+      }).join('');
+    }
+
+    document.getElementById('km-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      if (!currentUser) return;
+      const kmVal = parseFloat(document.getElementById('km-input').value);
+      const noteVal = document.getElementById('km-note').value.trim();
+      if (!kmVal) return;
+
+      await supabaseClient.from('km_logs').insert({ user_id: currentUser.id, km: kmVal, note: noteVal });
+      if (noteVal) {
+        await supabaseClient.from('messages').insert({ user_id: currentUser.id, content: `🏃‍♂️ +${kmVal} km au compteur ! (${noteVal})` });
+      }
+      e.target.reset();
+      await loadKmLogs();
+      await loadMessages(false);
+    });
+
+    // 6. SONDAGES EXPRESS
+    async function loadPolls() {
+      const { data: polls } = await supabaseClient.from('polls').select('*, poll_votes(user_id, option_index)').order('created_at', { ascending: false }).limit(4);
+      const container = document.getElementById('polls-list');
+
+      if (!polls || polls.length === 0) {
+        container.innerHTML = `<p class="text-xs text-slate-400 italic col-span-full">Aucun sondage en cours. Lance une question pour le groupe !</p>`;
+        return;
+      }
+
+      container.innerHTML = polls.map(poll => {
+        const votes = poll.poll_votes || [];
+        const totalVotes = votes.length;
+        const myVote = currentUser ? votes.find(v => v.user_id === currentUser.id) : null;
+        const canDelete = currentProfile && (currentProfile.role === 'admin' || poll.created_by === currentUser?.id);
+
+        const optionsHtml = (poll.options || []).map((optText, idx) => {
+          const count = votes.filter(v => v.option_index === idx).length;
+          const pct = totalVotes > 0 ? Math.round((count / totalVotes) * 100) : 0;
+          const isChosen = myVote && myVote.option_index === idx;
+
+          return `
+            <button onclick="votePoll('${poll.id}', ${idx})" ${!currentUser ? 'disabled' : ''}
+              class="w-full text-left relative overflow-hidden rounded-xl border p-2.5 text-xs font-semibold transition cursor-pointer ${
+                isChosen ? 'border-orange-500 bg-orange-50/50 text-orange-900' : 'border-slate-200 hover:border-slate-300 text-slate-700'
+              }">
+              <div class="absolute inset-y-0 left-0 bg-orange-500/15 transition-all" style="width: ${pct}%"></div>
+              <div class="relative flex justify-between items-center">
+                <span>${isChosen ? '✓ ' : ''}${escapeHtml(optText)}</span>
+                <span class="text-[11px] font-extrabold text-slate-500">${count} (${pct}%)</span>
+              </div>
+            </button>`;
+        }).join('');
+
+        return `
+          <div class="bg-slate-50/70 rounded-2xl border border-slate-200/80 p-4 space-y-3">
+            <div class="flex items-start justify-between gap-2">
+              <h4 class="font-bold text-sm text-slate-900">${escapeHtml(poll.question)}</h4>
+              ${canDelete ? `<button onclick="deletePoll('${poll.id}')" class="text-xs text-slate-400 hover:text-red-600 cursor-pointer">&times;</button>` : ''}
+            </div>
+            <div class="space-y-2">${optionsHtml}</div>
+          </div>`;
+      }).join('');
+    }
+
+    async function votePoll(pollId, optionIndex) {
+      if (!currentUser) return;
+      await supabaseClient.from('poll_votes').upsert({ poll_id: pollId, user_id: currentUser.id, option_index: optionIndex });
+      await loadPolls();
+    }
+
+    async function deletePoll(pollId) {
+      await supabaseClient.from('polls').delete().eq('id', pollId);
+      await loadPolls();
+    }
+
+    document.getElementById('new-poll-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      if (!currentUser) return;
+      const options = [
+        document.getElementById('poll-opt1').value.trim(),
+        document.getElementById('poll-opt2').value.trim(),
+        document.getElementById('poll-opt3').value.trim()
+      ].filter(Boolean);
+
+      await supabaseClient.from('polls').insert({
+        question: document.getElementById('poll-question').value.trim(),
+        options,
+        created_by: currentUser.id
+      });
+      e.target.reset();
+      togglePollModal(false);
+      await loadPolls();
+    });
+
+    // 7. MUR DES EXPLOITS & DOSSIERS (PHOTOS COMPRESSÉES)
+    async function loadPhotos() {
+      const { data: photos } = await supabaseClient.from('photos').select('*').order('created_at', { ascending: false }).limit(8);
+      const grid = document.getElementById('photos-grid');
+
+      if (!photos || photos.length === 0) {
+        grid.innerHTML = `<p class="text-xs text-slate-400 italic col-span-full py-6 text-center">Aucune photo postée pour le moment. Inaugure le mur !</p>`;
+        return;
+      }
+
+      grid.innerHTML = photos.map(photo => {
+        const author = allProfiles[photo.user_id] || { full_name: 'Coureur' };
+        const canDelete = currentProfile && (currentProfile.role === 'admin' || photo.user_id === currentUser?.id);
+
+        return `
+          <div class="bg-slate-50 rounded-2xl border border-slate-200/80 overflow-hidden flex flex-col justify-between group">
+            <div class="relative h-44 bg-slate-200">
+              <img src="${photo.image_data}" class="w-full h-full object-cover" />
+              ${canDelete ? `<button onclick="deletePhoto('${photo.id}')" class="absolute top-2 right-2 bg-slate-900/70 text-white text-[10px] font-bold px-2 py-0.5 rounded-full opacity-0 group-hover:opacity-100 transition cursor-pointer">Supprimer</button>` : ''}
+            </div>
+            <div class="p-3.5 space-y-2">
+              <p class="text-xs font-semibold text-slate-800 leading-snug">« ${escapeHtml(photo.caption)} »</p>
+              <div class="flex items-center justify-between pt-1 border-t border-slate-200/60">
+                <span class="text-[11px] text-slate-500 font-medium">${escapeHtml(author.full_name.split(' ')[0])}</span>
+                <button onclick="likePhoto('${photo.id}', ${photo.likes || 0})" class="text-xs font-bold bg-white hover:bg-orange-50 border border-slate-200 px-2.5 py-1 rounded-full transition cursor-pointer">
+                  🔥 ${photo.likes || 0}
+                </button>
+              </div>
+            </div>
+          </div>`;
+      }).join('');
+    }
+
+    function compressImage(file) {
+      return new Promise((resolve) => {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          const img = new Image();
+          img.onload = () => {
+            const canvas = document.createElement('canvas');
+            const maxW = 700;
+            const scale = Math.min(1, maxW / img.width);
+            canvas.width = img.width * scale;
+            canvas.height = img.height * scale;
+            canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
+            resolve(canvas.toDataURL('image/jpeg', 0.75));
+          };
+          img.src = e.target.result;
+        };
+        reader.readAsDataURL(file);
+      });
+    }
+
+    document.getElementById('new-photo-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      if (!currentUser) return;
+      const file = document.getElementById('photo-file').files[0];
+      const caption = document.getElementById('photo-caption').value.trim();
+      if (!file) return;
+
+      const btn = document.getElementById('photo-submit');
+      btn.disabled = true;
+      btn.textContent = 'Envoi...';
+
+      const compressedDataUrl = await compressImage(file);
+      await supabaseClient.from('photos').insert({
+        user_id: currentUser.id,
+        image_data: compressedDataUrl,
+        caption
+      });
+
+      btn.disabled = false;
+      btn.textContent = 'Publier la photo';
+      e.target.reset();
+      togglePhotoModal(false);
+      await loadPhotos();
+    });
+
+    async function likePhoto(photoId, currentLikes) {
+      await supabaseClient.from('photos').update({ likes: currentLikes + 1 }).eq('id', photoId);
+      await loadPhotos();
+    }
+
+    async function deletePhoto(photoId) {
+      await supabaseClient.from('photos').delete().eq('id', photoId);
+      await loadPhotos();
+    }
+
+    // 8. TEMPS RÉEL & UTILITAIRES
     let realtimeInitialized = false;
     function setupRealtime() {
       if (realtimeInitialized) return;
@@ -693,15 +1014,26 @@
         .on('postgres_changes', { event: '*', schema: 'running', table: 'runs' }, () => loadRuns())
         .on('postgres_changes', { event: '*', schema: 'running', table: 'run_participants' }, () => loadRuns())
         .on('postgres_changes', { event: '*', schema: 'running', table: 'profiles' }, () => loadProfiles())
+        .on('postgres_changes', { event: '*', schema: 'running', table: 'km_logs' }, () => loadKmLogs())
+        .on('postgres_changes', { event: '*', schema: 'running', table: 'polls' }, () => loadPolls())
+        .on('postgres_changes', { event: '*', schema: 'running', table: 'poll_votes' }, () => loadPolls())
+        .on('postgres_changes', { event: '*', schema: 'running', table: 'photos' }, () => loadPhotos())
         .subscribe();
 
       setInterval(() => loadMessages(false), 4000);
     }
 
     function toggleModal(show) {
-      const modal = document.getElementById('run-modal');
-      modal.classList.toggle('hidden', !show);
-      modal.classList.toggle('flex', show);
+      const m = document.getElementById('run-modal');
+      m.classList.toggle('hidden', !show); m.classList.toggle('flex', show);
+    }
+    function togglePollModal(show) {
+      const m = document.getElementById('poll-modal');
+      m.classList.toggle('hidden', !show); m.classList.toggle('flex', show);
+    }
+    function togglePhotoModal(show) {
+      const m = document.getElementById('photo-modal');
+      m.classList.toggle('hidden', !show); m.classList.toggle('flex', show);
     }
 
     function escapeHtml(str) {
