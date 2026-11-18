@@ -118,31 +118,8 @@
       </div>
     </div>
 
-    <!-- PARTIE 2 : LE PLANNING MENSUEL (CALENDRIER INTERACTIF) -->
-    <section class="bg-white rounded-3xl border border-slate-200 shadow-xs p-5 sm:p-7">
-      <div class="flex flex-wrap items-center justify-between gap-4 mb-5">
-        <div>
-          <span class="text-xs font-extrabold uppercase tracking-wider text-orange-600">Vue d'ensemble</span>
-          <h2 id="calendar-month-title" class="text-2xl font-extrabold text-slate-900 capitalize">Mois Année</h2>
-          <p class="text-xs text-slate-500 mt-0.5">
-            Clique sur un jour vide pour <strong class="text-orange-600">planifier une sortie</strong>, ou sur un jour marqué pour filtrer les courses ci-dessus.
-          </p>
-        </div>
-        <div class="flex items-center gap-2">
-          <button onclick="changeMonth(-1)" class="w-10 h-10 rounded-xl border border-slate-200 hover:bg-slate-50 flex items-center justify-center font-bold text-slate-600 cursor-pointer">&larr;</button>
-          <button onclick="changeMonth(1)" class="w-10 h-10 rounded-xl border border-slate-200 hover:bg-slate-50 flex items-center justify-center font-bold text-slate-600 cursor-pointer">&rarr;</button>
-        </div>
-      </div>
-
-      <div class="grid grid-cols-7 text-center text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">
-        <div>Lun</div><div>Mar</div><div>Mer</div><div>Jeu</div><div>Ven</div><div>Sam</div><div>Dim</div>
-      </div>
-
-      <div id="calendar-grid" class="grid grid-cols-7 gap-1.5 sm:gap-2.5"></div>
-    </section>
-
-    <!-- PARTIE 3 : ESPACE CLUB, DÉFIS, SONDAGES & MUR DES SOUVENIRS -->
-    <section class="pt-4 space-y-8">
+    <!-- PARTIE 2 : VIE DU CLUB, DÉFIS, SONDAGES & MUR DES EXPLOITS -->
+    <section class="pt-6 border-t border-slate-200 space-y-8">
       <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-2">
         <div>
           <span class="text-xs font-extrabold uppercase tracking-wider text-orange-600">Vie du club</span>
@@ -220,6 +197,29 @@
         </div>
       </div>
 
+    </section>
+
+    <!-- PARTIE 3 : LE PLANNING MENSUEL (CALENDRIER INTERACTIF EN BAS) -->
+    <section class="bg-white rounded-3xl border border-slate-200 shadow-xs p-5 sm:p-7">
+      <div class="flex flex-wrap items-center justify-between gap-4 mb-5">
+        <div>
+          <span class="text-xs font-extrabold uppercase tracking-wider text-orange-600">Calendrier & Planification</span>
+          <h2 id="calendar-month-title" class="text-2xl font-extrabold text-slate-900 capitalize">Mois Année</h2>
+          <p class="text-xs text-slate-500 mt-0.5">
+            Une course repérée ? Clique sur un jour vide pour <strong class="text-orange-600">l'ajouter à l'agenda</strong>, ou sur un jour marqué pour filtrer les sorties.
+          </p>
+        </div>
+        <div class="flex items-center gap-2">
+          <button onclick="changeMonth(-1)" class="w-10 h-10 rounded-xl border border-slate-200 hover:bg-slate-50 flex items-center justify-center font-bold text-slate-600 cursor-pointer">&larr;</button>
+          <button onclick="changeMonth(1)" class="w-10 h-10 rounded-xl border border-slate-200 hover:bg-slate-50 flex items-center justify-center font-bold text-slate-600 cursor-pointer">&rarr;</button>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-7 text-center text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">
+        <div>Lun</div><div>Mar</div><div>Mer</div><div>Jeu</div><div>Ven</div><div>Sam</div><div>Dim</div>
+      </div>
+
+      <div id="calendar-grid" class="grid grid-cols-7 gap-1.5 sm:gap-2.5"></div>
     </section>
 
   </main>
@@ -569,6 +569,8 @@
           document.getElementById('runs-section-title').textContent = `Sorties du ${niceDate}`;
           renderCalendar();
           renderRunsList();
+          // Fait remonter la page en douceur jusqu'aux sorties filtrées
+          document.getElementById('runs-section-title').scrollIntoView({ behavior: 'smooth' });
         }
       } else {
         if (!currentUser) {
