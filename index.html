@@ -475,14 +475,21 @@
     }
 
     // 2. MEMBRES & BADGES RIGOLOS
-    async function loadProfiles() {
+   async function loadProfiles() {
       const { data } = await supabaseClient.from('profiles').select('*');
       allProfiles = {};
       const membersList = document.getElementById('members-list');
       membersList.innerHTML = '';
 
+      // On garde tous les profils en mémoire (pour afficher les auteurs du chat/photos),
+      // mais on filtre ceux qui ont is_hidden = true pour l'encart "La Team"
+      const visibleMembers = (data || []).filter(p => !p.is_hidden);
+
       (data || []).forEach(p => {
         allProfiles[p.id] = p;
+      });
+
+      visibleMembers.forEach(p => {
         const avatar = p.avatar_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(p.full_name || 'R')}`;
         const canEditBadge = currentProfile && (currentProfile.role === 'admin' || currentProfile.id === p.id);
         const badgeHtml = p.badge 
@@ -502,7 +509,7 @@
           </div>
         `;
       });
-      document.getElementById('members-count').textContent = (data || []).length;
+      document.getElementById('members-count').textContent = visibleMembers.length;
     }
 
     async function editMemberBadge(userId, currentBadge) {
