@@ -56,57 +56,33 @@
     </div>
   </section>
 
-  <!-- CONTENU PRINCIPAL -->
+ <!-- CONTENU PRINCIPAL -->
   <main class="max-w-7xl mx-auto px-4 py-8 flex-1 w-full space-y-12">
     
-    <!-- PARTIE 1 : CALENDRIER / SORTIES + CHAT -->
+    <!-- PARTIE 1 : PROCHAINES SORTIES (GAUCHE) + CHAT & TEAM (DROITE) -->
     <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
       
-      <!-- COLONNE GAUCHE (8/12) : CALENDRIER + LISTE DES SORTIES -->
-      <div class="lg:col-span-8 space-y-8">
-        
-        <!-- CALENDRIER MENSUEL -->
-        <div class="bg-white rounded-3xl border border-slate-200 shadow-xs p-5 sm:p-6">
-          <div class="flex flex-wrap items-center justify-between gap-4 mb-5">
-            <div>
-              <h2 id="calendar-month-title" class="text-xl font-extrabold text-slate-900 capitalize">Mois Année</h2>
-              <p class="text-xs text-slate-500 mt-0.5">
-                Clique sur un jour pour <strong class="text-orange-600">créer une sortie</strong> ou filtrer les courses prévues.
-              </p>
-            </div>
-            <div class="flex items-center gap-2">
-              <button onclick="resetDateFilter()" id="btn-reset-filter" class="hidden text-xs font-semibold bg-orange-50 text-orange-700 px-3 py-1.5 rounded-xl hover:bg-orange-100 cursor-pointer">
-                Tout afficher
-              </button>
-              <button onclick="changeMonth(-1)" class="w-9 h-9 rounded-xl border border-slate-200 hover:bg-slate-50 flex items-center justify-center font-bold text-slate-600 cursor-pointer">&larr;</button>
-              <button onclick="changeMonth(1)" class="w-9 h-9 rounded-xl border border-slate-200 hover:bg-slate-50 flex items-center justify-center font-bold text-slate-600 cursor-pointer">&rarr;</button>
-            </div>
+      <!-- COLONNE GAUCHE (8/12) : LISTE DES PROCHAINES SORTIES -->
+      <div class="lg:col-span-8 space-y-5">
+        <div class="flex flex-wrap items-center justify-between gap-3">
+          <div class="flex items-center gap-3">
+            <h2 id="runs-section-title" class="text-2xl font-extrabold text-slate-900">Toutes les prochaines sorties</h2>
+            <button onclick="resetDateFilter()" id="btn-reset-filter" class="hidden text-xs font-bold bg-orange-100 text-orange-700 px-3 py-1 rounded-full hover:bg-orange-200 cursor-pointer">
+              &times; Tout afficher
+            </button>
           </div>
-
-          <div class="grid grid-cols-7 text-center text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">
-            <div>Lun</div><div>Mar</div><div>Mer</div><div>Jeu</div><div>Ven</div><div>Sam</div><div>Dim</div>
-          </div>
-
-          <div id="calendar-grid" class="grid grid-cols-7 gap-1.5 sm:gap-2"></div>
+          <span id="runs-counter" class="text-xs font-bold bg-slate-200/70 text-slate-700 px-3 py-1 rounded-full">0 sortie</span>
         </div>
 
-        <!-- LISTE DES SORTIES -->
-        <div class="space-y-4">
-          <div class="flex items-center justify-between">
-            <h2 id="runs-section-title" class="text-xl font-extrabold text-slate-900">Toutes les prochaines sorties</h2>
-            <span id="runs-counter" class="text-xs font-bold bg-slate-200/70 text-slate-700 px-3 py-1 rounded-full">0 sortie</span>
-          </div>
-
-          <div id="runs-list" class="grid grid-cols-1 md:grid-cols-2 gap-5">
-            <div class="col-span-full text-center py-12 text-slate-400">Chargement de l'agenda...</div>
-          </div>
+        <div id="runs-list" class="grid grid-cols-1 md:grid-cols-2 gap-5">
+          <div class="col-span-full text-center py-12 text-slate-400">Chargement des sorties...</div>
         </div>
       </div>
 
       <!-- COLONNE DROITE (4/12) : CHAT + MEMBRES -->
       <div class="lg:col-span-4 space-y-6">
         <!-- CHAT EN DIRECT -->
-        <div class="bg-white rounded-3xl border border-slate-200 shadow-xs flex flex-col h-[540px]">
+        <div class="bg-white rounded-3xl border border-slate-200 shadow-xs flex flex-col h-[520px]">
           <div class="p-4 border-b border-slate-100 flex items-center justify-between">
             <div class="flex items-center gap-2">
               <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
@@ -142,8 +118,31 @@
       </div>
     </div>
 
-    <!-- PARTIE 2 : ESPACE CLUB, DÉFIS, SONDAGES & MUR DES SOUVENIRS -->
-    <section class="pt-6 border-t border-slate-200 space-y-8">
+    <!-- PARTIE 2 : LE PLANNING MENSUEL (CALENDRIER INTERACTIF) -->
+    <section class="bg-white rounded-3xl border border-slate-200 shadow-xs p-5 sm:p-7">
+      <div class="flex flex-wrap items-center justify-between gap-4 mb-5">
+        <div>
+          <span class="text-xs font-extrabold uppercase tracking-wider text-orange-600">Vue d'ensemble</span>
+          <h2 id="calendar-month-title" class="text-2xl font-extrabold text-slate-900 capitalize">Mois Année</h2>
+          <p class="text-xs text-slate-500 mt-0.5">
+            Clique sur un jour vide pour <strong class="text-orange-600">planifier une sortie</strong>, ou sur un jour marqué pour filtrer les courses ci-dessus.
+          </p>
+        </div>
+        <div class="flex items-center gap-2">
+          <button onclick="changeMonth(-1)" class="w-10 h-10 rounded-xl border border-slate-200 hover:bg-slate-50 flex items-center justify-center font-bold text-slate-600 cursor-pointer">&larr;</button>
+          <button onclick="changeMonth(1)" class="w-10 h-10 rounded-xl border border-slate-200 hover:bg-slate-50 flex items-center justify-center font-bold text-slate-600 cursor-pointer">&rarr;</button>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-7 text-center text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">
+        <div>Lun</div><div>Mar</div><div>Mer</div><div>Jeu</div><div>Ven</div><div>Sam</div><div>Dim</div>
+      </div>
+
+      <div id="calendar-grid" class="grid grid-cols-7 gap-1.5 sm:gap-2.5"></div>
+    </section>
+
+    <!-- PARTIE 3 : ESPACE CLUB, DÉFIS, SONDAGES & MUR DES SOUVENIRS -->
+    <section class="pt-4 space-y-8">
       <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-2">
         <div>
           <span class="text-xs font-extrabold uppercase tracking-wider text-orange-600">Vie du club</span>
@@ -162,12 +161,10 @@
               <span id="km-total-badge" class="text-xs font-extrabold bg-orange-100 text-orange-700 px-2.5 py-1 rounded-full">0 / 500 km</span>
             </div>
 
-            <!-- Barre de progression -->
             <div class="w-full bg-slate-100 h-4 rounded-full overflow-hidden p-0.5 border border-slate-200/60">
               <div id="km-progress-bar" class="bg-gradient-to-r from-orange-500 to-amber-400 h-full rounded-full transition-all duration-500" style="width: 0%"></div>
             </div>
 
-            <!-- Podium du groupe -->
             <div>
               <div class="text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-2">Top Coureurs du mois</div>
               <div id="km-leaderboard" class="space-y-2">
@@ -176,7 +173,6 @@
             </div>
           </div>
 
-          <!-- Formulaire rapide ajout de km -->
           <form id="km-form" class="pt-4 border-t border-slate-100 flex gap-2">
             <input type="number" step="0.1" min="0.5" max="200" id="km-input" required placeholder="Km (ex: 8.5)" disabled
               class="w-28 text-sm bg-slate-100 rounded-xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-orange-500 disabled:opacity-50" />
@@ -207,7 +203,7 @@
 
       </div>
 
-      <!-- BLOC 3 : LE MUR DES EXPLOITS & DOSSIERS (PHOTOS DES MEMBRES) -->
+      <!-- BLOC 3 : LE MUR DES EXPLOITS & DOSSIERS -->
       <div class="bg-white rounded-3xl border border-slate-200 shadow-xs p-6 space-y-5">
         <div class="flex flex-wrap items-center justify-between gap-4">
           <div>
